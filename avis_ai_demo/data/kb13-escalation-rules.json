@@ -1,7 +1,7 @@
 [
   {
     "case_type": "financial_dispute",
-    "aliases": ["انخصم", "مبلغ زيادة", "خصم", "double charge", "wrong charge", "refund", "وديعة ما رجعت"],
+    "aliases": ["انخصم", "مبلغ زيادة", "خصمتوا من بطاقتي", "خصمتو من بطاقتي", "double charge", "wrong charge", "refund", "وديعة ما رجعت"],
     "risk_level": "high",
     "direct_answer_allowed": false,
     "required_fields": ["name", "mobile", "booking_or_ra_number", "branch_or_country", "amount", "currency", "transaction_date", "issue_details"],
@@ -30,4 +30,3 @@
     "response_en": "Your safety comes first. If there is injury or immediate danger, contact emergency services first. Then I can prepare the case details for assistance."
   }
 ]
-

@@ -237,6 +237,8 @@ def _contextual_general_faq_opener(context: AnswerContext) -> str:
         return "يسعدنا أن اللوغو عجبكم."
     if any(token in text for token in ["فرعكم عجبنا", "عجبنا فرعكم", "شفنا واحد من فروعكم", "شفت فرعكم", "شفنا فرعكم"]):
         return "جميل أنه لفت انتباهكم."
+    if any(token in text for token in ["بحب ايفيس", "بحب أفيس", "احب ايفيس", "أحب أفيس", "هذا الحب", "مقابل هذا الحب"]):
+        return "وصلت المحبة، وهذا شيء نعتز فيه."
     return ""
 
 

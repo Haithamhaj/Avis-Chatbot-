@@ -71,6 +71,8 @@ def _deterministic_conversation_classification(text: str) -> ConversationClassif
         return ConversationClassification(Intent.ROADSIDE_OR_ACCIDENT, "operational_routing", "safety_first", "worried", "safety_check")
     if _has_explicit_complaint_or_dispute_details(text):
         return ConversationClassification(Intent.COMPLAINT_OR_DISPUTE, "operational_routing", "serious_supportive", "frustrated", "collect_case_details")
+    if _is_discount_or_offer_query(text):
+        return ConversationClassification(Intent.GENERAL_FAQ, "operational_routing", "friendly_casual", "playful_positive", "lookup_general_faq")
     if _is_negative_sentiment_unclear(text):
         return ConversationClassification(
             Intent.POTENTIALLY_RELEVANT_UNCLEAR,
@@ -247,9 +249,10 @@ def _has_explicit_complaint_or_dispute_details(text: str) -> bool:
         "ما رجعت الوديعة",
         "رجعوا الوديعة",
         "انخصم",
-        "خصم",
         "خصمتوا",
         "خصمتو",
+        "خصمتوا من",
+        "خصمتو من",
         "مبلغ زيادة",
         "مشكلة في الدفع",
         "مشكلة بالدفع",
@@ -322,6 +325,12 @@ def _is_unclear_negative_followup(text: str) -> bool:
         "just a feeling",
     ]
     return any(marker in text for marker in markers)
+
+
+def _is_discount_or_offer_query(text: str) -> bool:
+    if any(token in text for token in ["انخصم", "بطاقة خصم", "خصمتوا من", "خصمتو من"]):
+        return False
+    return any(token in text for token in ["خصم", "عروض", "عرض", "برومو", "كود خصم", "discount", "offer", "promo"])
 
 
 def _is_potentially_relevant_unclear(text: str) -> bool:

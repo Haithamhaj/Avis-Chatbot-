@@ -22,6 +22,8 @@ def route_intent(message: str, gpt_intent: str | None = None) -> Intent:
         return Intent.ROADSIDE_ASSISTANCE
     if any(token in text for token in ["broke down", "towing", "battery", "تعطلت", "سطحة", "البطارية"]):
         return Intent.ROADSIDE_ASSISTANCE
+    if _is_discount_or_offer_query(text):
+        return Intent.GENERAL_FAQ
     if gpt_intent and gpt_intent != Intent.FALLBACK_UNKNOWN.value:
         try:
             return Intent(gpt_intent)
@@ -46,6 +48,12 @@ def _is_price_query(text: str) -> bool:
     if any(token in text for token in ["price", "how much", "سعر"]):
         return True
     return bool(re.search(r"(^|\s)كم(\s|$)", text))
+
+
+def _is_discount_or_offer_query(text: str) -> bool:
+    if any(token in text for token in ["انخصم", "wrong charge", "double charge", "refund"]):
+        return False
+    return any(token in text for token in ["خصم", "عروض", "عرض", "برومو", "discount", "offer", "promo"])
 
 
 def route_conversation_intent(message: str) -> Intent | None:

@@ -1,5 +1,14 @@
 [
   {
+    "faq_id": "offers_and_discounts",
+    "topic": "offers_and_discounts",
+    "aliases": ["خصم", "كود خصم", "عندكم خصم", "تعطوني خصم", "عروض", "عرض", "برومو", "promo", "discount", "offer", "offers"],
+    "risk_level": "low",
+    "answer_ar": "الخصومات والعروض تعتمد على القناة والفترة ونوع الحجز. حسب البيانات المتاحة، الحجز الإلكتروني قد يعطي سعرًا إلكترونيًا أقل من سعر الفرع لبعض الفئات. إذا تعطيني المدينة، مدة الإيجار، وفئة السيارة أقدر أطلع لك السعر المتاح من الجداول.",
+    "answer_en": "Discounts and offers depend on channel, timing, and booking type. Based on the available data, online booking may provide a lower online rate than the in-branch rate for some categories. Share the city, rental duration, and vehicle category and I can check the available structured price.",
+    "related_kbs": ["KB03", "KB04", "KB06"]
+  },
+  {
     "faq_id": "company_overview",
     "topic": "company_overview",
     "aliases": ["شركة ايش", "شركة إيش", "انتو شركة ايش", "انتم شركة ايش", "ايش افيس", "إيش أفيس", "وش افيس", "وش أفيس", "ايش آيفس", "إيش آيفس", "من انتم", "مين انتم", "لوجو افيس", "لوجو أفيس", "لوجو آيفس", "what is avis", "who are you", "about avis"],

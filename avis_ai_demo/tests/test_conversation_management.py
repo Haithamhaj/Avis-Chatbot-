@@ -311,6 +311,22 @@ def test_explicit_payment_dispute_still_escalates():
     assert "رقم الحجز أو العقد" in response
 
 
+def test_discount_request_is_not_financial_dispute():
+    response, _state, trace = handle_message(
+        None,
+        "شوف انا بصراحة بحب ايفيس ولازم تعطوني خصم مقابل هذا الحب هههههه",
+        service(),
+    )
+
+    assert trace["intent"] == "general_faq"
+    assert trace["escalation_status"] is False
+    assert trace["risk_level"] == "low"
+    assert "رقم الحجز أو العقد" not in response
+    assert "الفريق المختص" not in response
+    assert "وصلت المحبة" in response
+    assert "الحجز الإلكتروني" in response or "السعر المتاح" in response
+
+
 def test_unclear_negative_followup_does_not_repeat_same_template():
     first_response, state, first_trace = handle_message(
         None,

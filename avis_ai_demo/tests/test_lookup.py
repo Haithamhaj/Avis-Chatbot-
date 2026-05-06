@@ -76,3 +76,7 @@ def test_sos_data_and_escalation_matching():
     assert escalation is not None
     assert escalation["case_type"] in {"financial_dispute", "international_rental_issue"}
 
+
+def test_discount_word_alone_is_not_escalation():
+    assert match_escalation("لازم تعطوني خصم مقابل هذا الحب") is None
+    assert match_escalation("انخصم مني مبلغ")["case_type"] == "financial_dispute"
