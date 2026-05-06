@@ -1,0 +1,38 @@
+[
+  {
+    "intent": "daily_rental",
+    "examples_ar": ["أبغى أستأجر سيارة", "بدي سيارة يومين", "أحتاج سيارة من الرياض بكرة", "استلام الخميس الساعة 2"],
+    "examples_en": ["I want to rent a car", "I need a car for two days", "pickup in Riyadh tomorrow"]
+  },
+  {
+    "intent": "monthly_rental",
+    "examples_ar": ["أبغى سيارة شهر", "كم سعر يارس شهري", "تأجير شهري", "مني ليس"],
+    "examples_en": ["monthly rental", "how much is Yaris monthly", "mini lease"]
+  },
+  {
+    "intent": "branch_lookup",
+    "examples_ar": ["وين فرع السليمانية", "فرع جدة مفتوح", "أقرب فرع", "رقم فرع الدمام"],
+    "examples_en": ["where is Sulaymaniyah branch", "is Jeddah branch open", "nearest branch"]
+  },
+  {
+    "intent": "fleet_pricing",
+    "examples_ar": ["كم سعر يارس", "عندكم SUV", "سعر كامري", "أبغى سيارة اقتصادية"],
+    "examples_en": ["how much is Yaris", "do you have SUV", "Camry price", "economy car"]
+  },
+  {
+    "intent": "card_deposit_policy",
+    "examples_ar": ["متى ترجع الوديعة", "هل لازم بطاقة ائتمان", "ينفع بطاقة خصم", "وديعة"],
+    "examples_en": ["when is deposit released", "do I need credit card", "can I use debit card", "deposit"]
+  },
+  {
+    "intent": "roadside_assistance",
+    "examples_ar": ["السيارة تعطلت", "أحتاج سطحة", "البطارية خربانة", "بنزين خلص"],
+    "examples_en": ["car broke down", "need towing", "battery is dead", "out of fuel"]
+  },
+  {
+    "intent": "complaint_or_financial_dispute",
+    "examples_ar": ["انخصم مني مبلغ", "أبي أرفع شكوى", "دفعت وما وصلني رقم حجز", "الوديعة ما رجعت"],
+    "examples_en": ["I was charged extra", "I want to complain", "paid but no booking number", "deposit not released"]
+  }
+]
+

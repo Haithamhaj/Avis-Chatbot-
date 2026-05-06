@@ -1,0 +1,35 @@
+[
+  {
+    "channel_id": "avis_sa_website",
+    "platform": "www.avis.com.sa",
+    "availability": "24/7 Online",
+    "supported_services": ["daily_rental", "monthly_rental"],
+    "details_ar": "يدعم الحجز الإلكتروني للتأجير اليومي والشهري مع الدفع الإلكتروني وخصم إلكتروني تقريبي مقارنة بسعر الفرع.",
+    "details_en": "Supports online daily and monthly booking with digital payment and an approximate online discount compared with in-branch rates."
+  },
+  {
+    "channel_id": "avis_global",
+    "platform": "www.avis.com",
+    "availability": "24/7 Online",
+    "supported_services": ["international_booking"],
+    "details_ar": "للحجوزات الدولية وشروط الدول المختلفة.",
+    "details_en": "For international bookings and country-specific terms."
+  },
+  {
+    "channel_id": "physical_branch",
+    "platform": "Physical Branches",
+    "availability": "Per branch hours",
+    "supported_services": ["walk_in_booking", "payment", "vehicle_pickup"],
+    "details_ar": "الحجز من خلال الفروع حسب ساعات عمل كل فرع. يقبل النقد وبطاقات الائتمان/الخصم حسب السياسة.",
+    "details_en": "Walk-in booking through branches based on each branch's working hours. Cash and credit/debit cards are accepted according to policy."
+  },
+  {
+    "channel_id": "phone_branch_lines",
+    "platform": "Branch direct lines",
+    "availability": "Per branch hours",
+    "supported_services": ["branch_inquiry", "booking_support"],
+    "details_ar": "يمكن التواصل مع أرقام الفروع المباشرة حسب ساعات العمل.",
+    "details_en": "Customers can call branch direct lines during working hours."
+  }
+]
+

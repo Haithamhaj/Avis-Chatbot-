@@ -1,0 +1,21 @@
+[
+  {
+    "service_id": "cash_corporate_contract",
+    "name_ar": "تعاقد شركات نقدي",
+    "name_en": "Cash Corporate Contract",
+    "description_ar": "حساب شركات مع فواتير، حيث تتم محاسبة الشركة بعد الاستخدام.",
+    "description_en": "Corporate account with invoicing where the company is billed after use.",
+    "target": "SMEs and large enterprises needing regular staff rental.",
+    "required_fields": ["name", "company", "email", "mobile", "city", "number_of_cars", "duration", "notes"]
+  },
+  {
+    "service_id": "operational_leasing",
+    "name_ar": "تأجير تشغيلي",
+    "name_en": "Operational Leasing",
+    "description_ar": "تأجير طويل الأجل حيث توفر أفيس وتدير أسطولًا مخصصًا للعميل.",
+    "description_en": "Long-term leasing where Avis provides and maintains a dedicated fleet for the corporate client.",
+    "target": "Large corporations needing dedicated vehicles for extended periods.",
+    "required_fields": ["name", "company", "email", "mobile", "city", "number_of_cars", "duration", "notes"]
+  }
+]
+

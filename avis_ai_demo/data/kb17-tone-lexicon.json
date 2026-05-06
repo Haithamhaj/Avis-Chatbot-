@@ -1,0 +1,72 @@
+[
+  {
+    "phrase": "هلا وارحب",
+    "tone_modes": ["friendly_casual"],
+    "intents": ["greeting", "small_talk"],
+    "auto_use": true,
+    "notes": "Warm Saudi greeting for light conversation only."
+  },
+  {
+    "phrase": "أبشر",
+    "tone_modes": ["professional_helpful", "friendly_casual"],
+    "intents": ["daily_rental", "monthly_rental", "branch_lookup", "fleet_pricing", "general_faq"],
+    "auto_use": true,
+    "notes": "Short service acknowledgement before asking for missing details."
+  },
+  {
+    "phrase": "حاضر طال عمرك",
+    "tone_modes": ["professional_helpful"],
+    "intents": ["daily_rental", "branch_lookup", "general_faq"],
+    "auto_use": false,
+    "notes": "Use sparingly in service-oriented replies."
+  },
+  {
+    "phrase": "ابشر طال عمرك",
+    "tone_modes": ["professional_helpful"],
+    "intents": ["daily_rental", "branch_lookup"],
+    "auto_use": false,
+    "notes": "Use sparingly. Do not use in complaints, roadside, payments, or quotations."
+  },
+  {
+    "phrase": "تشرفنا",
+    "tone_modes": ["friendly_casual", "professional_helpful"],
+    "intents": ["greeting", "thanks_acknowledgement"],
+    "auto_use": false,
+    "notes": "Suitable when the customer introduces themselves or closes politely."
+  },
+  {
+    "phrase": "والنعم فيك",
+    "tone_modes": ["friendly_casual"],
+    "intents": ["greeting", "small_talk"],
+    "auto_use": false,
+    "notes": "Use only when the customer introduces themselves, tribe, family name, or identity in a friendly context."
+  },
+  {
+    "phrase": "ابد ما طلبت",
+    "tone_modes": ["friendly_casual", "professional_helpful"],
+    "intents": ["daily_rental", "branch_lookup", "general_faq"],
+    "auto_use": false,
+    "notes": "Means the request is light/easy. Use only for low-risk simple service requests."
+  },
+  {
+    "phrase": "تامر امر",
+    "tone_modes": ["friendly_casual"],
+    "intents": ["greeting", "small_talk"],
+    "auto_use": false,
+    "notes": "Very informal. Avoid unless the conversation is clearly casual and low-risk."
+  },
+  {
+    "phrase": "غالي و الطلب رخيص",
+    "tone_modes": ["friendly_casual"],
+    "intents": ["small_talk"],
+    "auto_use": false,
+    "notes": "Very informal. Never use for operational commitments, complaints, payments, or accidents."
+  },
+  {
+    "phrase": "على هالخشم",
+    "tone_modes": ["friendly_casual"],
+    "intents": ["small_talk"],
+    "auto_use": false,
+    "notes": "Very informal. Keep as optional persona color only; do not use automatically."
+  }
+]

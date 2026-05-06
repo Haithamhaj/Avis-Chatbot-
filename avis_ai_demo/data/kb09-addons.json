@@ -1,0 +1,33 @@
+[
+  {
+    "addon_id": "additional_driver",
+    "name_ar": "سائق إضافي",
+    "name_en": "Additional Driver",
+    "aliases": ["سائق ثاني", "سائق إضافي", "additional driver", "second driver"],
+    "answer_ar": "يمكن إضافة سائق إضافي عند الفرع. يجب أن يقدم السائق الإضافي هوية ورخصة قيادة سارية. تطبق رسوم إضافية.",
+    "answer_en": "An additional driver can be added at the branch. The additional driver must present valid ID and driving license. Additional fees apply.",
+    "risk_level": "low",
+    "direct_answer_allowed": true
+  },
+  {
+    "addon_id": "external_authorization",
+    "name_ar": "تفويض خارجي",
+    "name_en": "External Authorization",
+    "aliases": ["تفويض", "authorization", "external authorization", "شخص يقود السيارة"],
+    "answer_ar": "يمكن تفويض طرف ثالث بقيادة السيارة بنموذج تفويض صالح، مع الالتزام بعدم وجود مخالفات على التفويض. لا يعني ذلك السماح بالسفر خارج السعودية.",
+    "answer_en": "A third party can drive with a valid authorization form, subject to authorization conditions and traffic violation rules. This does not permit driving outside Saudi Arabia.",
+    "risk_level": "medium",
+    "direct_answer_allowed": true
+  },
+  {
+    "addon_id": "open_mileage",
+    "name_ar": "كيلومترات مفتوحة",
+    "name_en": "Open Mileage / Unlimited KM",
+    "aliases": ["كيلو مفتوح", "كيلومترات مفتوحة", "unlimited km", "open mileage"],
+    "answer_ar": "يمكن إضافة خيار الكيلومترات المفتوحة لبعض السيارات مقابل تكلفة إضافية تختلف حسب فئة السيارة. التوفر والتكلفة النهائية يحتاجان تأكيدًا حسب الفئة والفرع.",
+    "answer_en": "Open mileage can be added for selected vehicles at an additional cost that varies by vehicle class. Final availability and cost require confirmation by class and branch.",
+    "risk_level": "medium",
+    "direct_answer_allowed": true
+  }
+]
+

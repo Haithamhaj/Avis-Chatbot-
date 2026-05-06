@@ -1,0 +1,43 @@
+{
+  "Jeddah": {
+    "Riyadh": 405,
+    "Dammam": 550,
+    "Jubail": 580,
+    "Makkah": 180,
+    "Madinah": 235,
+    "Taif": 205,
+    "Abha": 405,
+    "Tabuk": 430
+  },
+  "Riyadh": {
+    "Jeddah": 405,
+    "Dammam": 250,
+    "Jubail": 265,
+    "Makkah": 525,
+    "Madinah": 465,
+    "Taif": 405,
+    "Abha": 405,
+    "Tabuk": 580
+  },
+  "Dammam": {
+    "Jeddah": 550,
+    "Riyadh": 250,
+    "Jubail": 150,
+    "Makkah": 695,
+    "Madinah": 640,
+    "Taif": 525,
+    "Abha": 525,
+    "Tabuk": 775
+  },
+  "Jubail": {
+    "Jeddah": 580,
+    "Riyadh": 265,
+    "Dammam": 150,
+    "Makkah": 810,
+    "Madinah": 760,
+    "Taif": 580,
+    "Abha": 610,
+    "Tabuk": 935
+  }
+}
+

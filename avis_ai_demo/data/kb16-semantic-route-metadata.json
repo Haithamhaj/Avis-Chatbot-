@@ -1,0 +1,112 @@
+[
+  {
+    "route_id": "brand_company_info",
+    "type": "kb_lookup",
+    "target_intent": "general_faq",
+    "target_modules": ["KB14"],
+    "examples_ar": ["ليش اختار آيفس", "لماذا آيفس السعودية", "ايش مميزات أفيس", "خبرة أفيس", "أسطول أفيس", "جوائز أفيس"],
+    "examples_en": ["why choose Avis Saudi", "Avis advantages", "Avis Saudi experience", "Avis fleet quality", "Avis awards"],
+    "required_validation": [],
+    "allowed_next_step": "semantic_kb_answer",
+    "notes": "Informational routing only. Brand facts must not become exact vehicle availability or branch inventory claims."
+  },
+  {
+    "route_id": "daily_rental_workflow",
+    "type": "workflow",
+    "target_intent": "daily_rental",
+    "target_modules": ["workflow_daily_rental", "KB03", "KB05", "KB07"],
+    "examples_ar": ["أبغى أستأجر سيارة", "احتاج موتر بكرة", "أرتب حجز سيارة", "استلام من الرياض وإرجاع بجدة", "سيارة يومين"],
+    "examples_en": ["I need to rent a car", "book a car tomorrow", "pickup in Riyadh and return in Jeddah", "car for two days"],
+    "required_validation": ["has_valid_license", "pickup_city", "dropoff_city", "rental_days", "vehicle_query"],
+    "allowed_next_step": "workflow_state_machine",
+    "notes": "Candidate only. Quote and payment are controlled by deterministic workflow and calculators."
+  },
+  {
+    "route_id": "monthly_rental_workflow",
+    "type": "workflow",
+    "target_intent": "monthly_rental",
+    "target_modules": ["workflow_monthly_rental", "KB04"],
+    "examples_ar": ["أبغى سيارة شهر", "تأجير شهري", "مني ليس", "عقد شهر كامل"],
+    "examples_en": ["monthly rental", "car for one month", "mini lease", "monthly car lease"],
+    "required_validation": ["vehicle_query"],
+    "allowed_next_step": "monthly_lookup_and_calculator",
+    "notes": "Candidate only. Monthly prices must use KB04 only."
+  },
+  {
+    "route_id": "fleet_price_lookup",
+    "type": "kb_lookup",
+    "target_intent": "fleet_pricing",
+    "target_modules": ["KB02", "KB03"],
+    "examples_ar": ["كم سعر يارس", "عندكم كامري", "أبغى سيارة اقتصادية", "وش فئات السيارات"],
+    "examples_en": ["how much is Yaris", "do you have Camry", "economy car price", "vehicle categories"],
+    "required_validation": ["vehicle_query"],
+    "allowed_next_step": "structured_price_lookup",
+    "notes": "Candidate only. Totals cannot be generated without calculator output."
+  },
+  {
+    "route_id": "branch_lookup",
+    "type": "kb_lookup",
+    "target_intent": "branch_lookup",
+    "target_modules": ["KB01"],
+    "examples_ar": ["وين الفرع", "أقرب فرع", "فرع المطار", "ساعات عمل فرع جدة"],
+    "examples_en": ["where is the branch", "nearest branch", "airport branch", "branch working hours"],
+    "required_validation": ["branch_or_city_query"],
+    "allowed_next_step": "structured_branch_lookup",
+    "notes": "Candidate only. Branch facts must come from KB01."
+  },
+  {
+    "route_id": "deposit_policy_or_dispute",
+    "type": "kb_or_escalation",
+    "target_intent": "card_deposit_policy",
+    "target_modules": ["KB08", "KB13"],
+    "examples_ar": ["متى ترجع الوديعة", "الوديعة معلقة", "انخصم مني مبلغ", "دفعت وما وصلني حجز"],
+    "examples_en": ["when is deposit released", "deposit is held", "wrong charge", "paid but no booking number"],
+    "required_validation": ["risk_rule_check"],
+    "allowed_next_step": "policy_or_escalation_router",
+    "notes": "Candidate only. If dispute/refund/payment complaint is detected, deterministic escalation KB13 overrides policy answer."
+  },
+  {
+    "route_id": "roadside_assistance_workflow",
+    "type": "workflow",
+    "target_intent": "roadside_assistance",
+    "target_modules": ["workflow_roadside", "KB10"],
+    "examples_ar": ["السيارة تعطلت", "أحتاج سطحة", "صار حادث", "البطارية خربانة", "السيارة ما تتحرك"],
+    "examples_en": ["car broke down", "need towing", "accident", "battery is dead", "car is not drivable"],
+    "required_validation": ["safety_status", "mobile", "plate_or_contract", "current_location", "issue_type", "drivable_status"],
+    "allowed_next_step": "roadside_state_machine",
+    "notes": "Candidate only. Safety and escalation rules override all normal answers."
+  },
+  {
+    "route_id": "chauffeur_service_info",
+    "type": "kb_lookup",
+    "target_intent": "general_faq",
+    "target_modules": ["KB11"],
+    "examples_ar": ["عندكم سيارة مع سواق", "أبغى سيارة بسائق", "توفرون شوفير", "خدمة سائق"],
+    "examples_en": ["car with driver", "chauffeur service", "driver service", "vehicle with chauffeur"],
+    "required_validation": ["city_if_availability_question"],
+    "allowed_next_step": "semantic_kb_answer",
+    "notes": "Informational routing only. Service request details are handed to the relevant team."
+  },
+  {
+    "route_id": "corporate_services_info",
+    "type": "kb_lookup",
+    "target_intent": "general_faq",
+    "target_modules": ["KB12"],
+    "examples_ar": ["عندكم حلول للشركات", "تأجير للشركات", "أسطول شركة", "عقد شركات"],
+    "examples_en": ["corporate rental", "business account", "fleet for company", "operational leasing"],
+    "required_validation": ["lead_details_if_customer_wants_contact"],
+    "allowed_next_step": "semantic_kb_answer",
+    "notes": "Informational routing only. Corporate leads should collect details before handover."
+  },
+  {
+    "route_id": "booking_channels_info",
+    "type": "kb_lookup",
+    "target_intent": "general_faq",
+    "target_modules": ["KB06"],
+    "examples_ar": ["كيف أحجز", "أحجز من الموقع", "هل الحجز أونلاين", "أقدر أحجز من الفرع"],
+    "examples_en": ["how do I book", "online booking", "book from the website", "walk in booking"],
+    "required_validation": [],
+    "allowed_next_step": "semantic_kb_answer",
+    "notes": "Informational routing only. Booking execution still goes through workflows."
+  }
+]

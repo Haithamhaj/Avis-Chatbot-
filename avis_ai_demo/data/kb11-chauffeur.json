@@ -1,0 +1,11 @@
+{
+  "service_name": "Car with Driver / Chauffeur",
+  "available_cities": ["Riyadh", "Tabuk", "Jubail"],
+  "not_available_cities": ["Jeddah", "Dammam"],
+  "required_fields": ["client_name", "mobile", "pickup_location", "pickup_date", "pickup_time", "vehicle_type", "duration", "notes"],
+  "answer_ar": "خدمة السيارة مع سائق هي طلب خدمة منفصل وليست حجز سيارة بدون سائق. يتم جمع التفاصيل وتحويلها للفريق المختص.",
+  "answer_en": "Car with driver is a separate service request, not a self-drive rental. Details are collected and handed over to the relevant team.",
+  "not_available_response_ar": "حسب البيانات المتوفرة، خدمة السيارة مع سائق غير متاحة حاليًا في جدة أو الدمام. أقدر أساعدك بحجز سيارة بدون سائق أو تحويل الطلب للفريق.",
+  "not_available_response_en": "According to current data, chauffeur service is not available in Jeddah or Dammam. I can help with self-drive rental or hand over the request to the team."
+}
+

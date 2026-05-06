@@ -1,0 +1,43 @@
+[
+  {
+    "policy_id": "credit_card_requirement",
+    "topic": "credit_card",
+    "aliases": ["بطاقة", "كريدت", "credit card", "visa", "mastercard", "debit"],
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "answer_ar": "بطاقة ائتمان Visa أو MasterCard صالحة مطلوبة لجميع عمليات التأجير. بطاقات الخصم قد لا تكون مقبولة لكل فئات السيارات.",
+    "answer_en": "A valid Visa or MasterCard credit card is mandatory for all rentals. Debit cards may not be accepted for all vehicle classes.",
+    "escalation_triggers": ["dispute", "card rejected", "double charge", "refund", "international card issue"]
+  },
+  {
+    "policy_id": "deposit_pre_authorization",
+    "topic": "deposit",
+    "aliases": ["وديعة", "deposit", "hold", "authorization", "pre-authorization"],
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "answer_ar": "مبلغ الوديعة يختلف حسب فئة السيارة ومدة التأجير. يتم عمل تفويض مؤقت على البطاقة وليس خصمًا نهائيًا عند بداية التأجير.",
+    "answer_en": "The deposit amount varies by vehicle class and rental duration. Avis places a pre-authorization hold on the card; it is not a final charge at the start of rental.",
+    "escalation_triggers": ["deposit not released", "refund", "charged", "وديعة ما رجعت", "انخصم"]
+  },
+  {
+    "policy_id": "deposit_release_timing",
+    "topic": "deposit_release",
+    "aliases": ["متى ترجع الوديعة", "release deposit", "deposit release", "وديعة ما رجعت"],
+    "risk_level": "high",
+    "direct_answer_allowed": true,
+    "answer_ar": "يتم تحرير الوديعة بعد إعادة السيارة بحالة سليمة، وعادة خلال 5 إلى 10 أيام عمل حسب البنك المصدر للبطاقة.",
+    "answer_en": "The deposit is released after the vehicle is returned in satisfactory condition, usually within 5-10 business days depending on the issuing bank.",
+    "escalation_triggers": ["over 10 days", "not released", "dispute", "refund request"]
+  },
+  {
+    "policy_id": "primary_driver_card_holder",
+    "topic": "card_holder_rule",
+    "aliases": ["بطاقة شخص ثاني", "third party card", "card holder", "primary driver"],
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "answer_ar": "يفضل أن يكون السائق الأساسي هو صاحب البطاقة. استخدام بطاقة طرف ثالث قد لا يكون مقبولًا حسب تقدير الفرع.",
+    "answer_en": "The primary driver should be the card holder. A third-party card may not be accepted at branch discretion.",
+    "escalation_triggers": ["exception", "branch refused", "payment dispute"]
+  }
+]
+

@@ -1,0 +1,65 @@
+[
+  {
+    "faq_id": "company_overview",
+    "topic": "company_overview",
+    "aliases": ["شركة ايش", "شركة إيش", "انتو شركة ايش", "انتم شركة ايش", "ايش افيس", "إيش أفيس", "وش افيس", "وش أفيس", "ايش آيفس", "إيش آيفس", "من انتم", "مين انتم", "لوجو افيس", "لوجو أفيس", "لوجو آيفس", "what is avis", "who are you", "about avis"],
+    "risk_level": "low",
+    "answer_ar": "آيفس السعودية من الشركات الرائدة في تأجير السيارات داخل المملكة، وتخدم الأفراد والشركات عبر شبكة فروع في المدن والمطارات الرئيسية. تشمل خدماتها التأجير اليومي والشهري، خدمات الشركات، السيارة مع سائق، الحجوزات العالمية، والمساعدة المرتبطة بالتأجير.",
+    "answer_en": "Avis Saudi is one of Saudi Arabia's leading car rental companies, serving individuals and businesses through branches in major cities and airports. Services include daily and monthly rental, corporate services, chauffeur service, international reservations, and rental-related support.",
+    "related_kbs": ["KB01", "KB03", "KB04", "KB06", "KB07", "KB08", "KB10", "KB11", "KB12"]
+  },
+  {
+    "faq_id": "why_avis_saudi",
+    "topic": "why_avis_saudi",
+    "aliases": ["لماذا آيفس", "لماذا أفيس", "ليش افيس", "ليش أفيس", "ليش آيفس", "ليش اختار افيس", "ليش أختار أفيس", "ليش أختار آيفس", "اختار افيس", "اختار أفيس", "اختار آيفس", "مميزات افيس", "مميزات أفيس", "مميزات آيفس", "خبرة افيس", "خبرة أفيس", "خبرة آيفس", "why avis", "why choose avis", "avis advantages"],
+    "risk_level": "low",
+    "answer_ar": "تتميز آيفس السعودية بخبرة طويلة في خدمات تأجير السيارات داخل المملكة منذ عام 1970، وبتركيزها على جودة الخدمة وسرعة الاستجابة. كما تعتمد على شبكة فروع في المدن والمطارات الرئيسية، وتقدم خيارات متنوعة للأفراد والشركات.",
+    "answer_en": "Avis Saudi has long experience in car rental services in Saudi Arabia since 1970, with a focus on service quality and quick response. It operates through branches in major cities and airports and offers options for individuals and businesses.",
+    "related_kbs": ["KB01", "KB06", "KB11", "KB12", "KB14"]
+  },
+  {
+    "faq_id": "fleet_quality_overview",
+    "topic": "fleet_quality",
+    "aliases": ["اسطول افيس", "أسطول أفيس", "سيارات افيس", "سيارات أفيس", "الموديلات الحديثة", "أحدث الموديلات", "تنوع السيارات", "fleet quality", "avis fleet", "new models"],
+    "risk_level": "low",
+    "answer_ar": "تشير معلومات آيفس السعودية إلى أن أسطولها يتجاوز 13,000 مركبة ويتميز بالتنوع والتجديد المستمر، ويشمل سيارات سيدان صغيرة ومتوسطة وكبيرة، سيارات دفع رباعي، سيارات فارهة، ومركبات تجارية مثل الشاحنات والحافلات والشاحنات الصغيرة. توفر الموديلات حسب الفئة والفرع والتاريخ.",
+    "answer_en": "Avis Saudi information indicates a fleet of more than 13,000 vehicles with ongoing renewal and variety, including small, medium, and large sedans, SUVs, luxury vehicles, and commercial vehicles such as trucks, buses, and vans. Model availability depends on category, branch, and date.",
+    "related_kbs": ["KB02", "KB14"]
+  },
+  {
+    "faq_id": "awards_and_service_quality",
+    "topic": "awards_and_service_quality",
+    "aliases": ["جوائز افيس", "جوائز أفيس", "جودة الخدمة", "تدريب الموظفين", "افضل شركة تأجير", "أفضل شركة تأجير", "avis awards", "service quality", "best car rental"],
+    "risk_level": "low",
+    "answer_ar": "بحسب معلومات الشركة، حصلت آيفس على جوائز محلية وإقليمية وعالمية في مجال خدمة العملاء وتأجير السيارات، منها أفضل شركة لتأجير السيارات في الشرق الأوسط، وأفضل مقدم خدمات سياحية وفندقية في المملكة العربية السعودية، وجوائز للإنجاز المتميز وأفضل وكيل. كما يخضع فريق العمل لتدريب مستمر من آيفس العالمية.",
+    "answer_en": "According to company information, Avis has received local, regional, and international awards in customer service and car rental, including Best Car Rental Company in the Middle East, Best Tourism and Hospitality Service Provider in Saudi Arabia, Outstanding Achievement, and Best Licensee awards. Staff also receive ongoing training from Avis global.",
+    "related_kbs": ["KB14"]
+  },
+  {
+    "faq_id": "international_travel_not_allowed",
+    "topic": "international_travel",
+    "aliases": ["أسافر خارج السعودية", "أطلع البحرين", "خارج المملكة", "outside Saudi", "international travel"],
+    "risk_level": "medium",
+    "answer_ar": "لا يسمح بقيادة سيارات أفيس السعودية خارج المملكة العربية السعودية حسب السياسة المذكورة في البيانات.",
+    "answer_en": "Avis Saudi vehicles cannot be driven outside Saudi Arabia according to the available policy.",
+    "related_kbs": ["KB09", "KB07"]
+  },
+  {
+    "faq_id": "fuel_policy",
+    "topic": "fuel_policy",
+    "aliases": ["بنزين", "وقود", "fuel", "gasoline"],
+    "risk_level": "low",
+    "answer_ar": "حسب البيانات، جميع السيارات تعمل ببنزين 91 ما لم يذكر خلاف ذلك، ويجب على العميل تعبئة الوقود قبل إعادة السيارة.",
+    "answer_en": "According to the data, all vehicles use Gasoline 91 unless stated otherwise, and the customer should refill before returning the vehicle.",
+    "related_kbs": ["KB14"]
+  },
+  {
+    "faq_id": "traffic_violations",
+    "topic": "traffic_violations",
+    "aliases": ["مخالفات", "traffic fines", "violations"],
+    "risk_level": "medium",
+    "answer_ar": "العميل مسؤول عن المخالفات المرورية التي تحدث خلال فترة التأجير.",
+    "answer_en": "The customer is responsible for traffic fines incurred during the rental period.",
+    "related_kbs": ["KB14", "KB13"]
+  }
+]

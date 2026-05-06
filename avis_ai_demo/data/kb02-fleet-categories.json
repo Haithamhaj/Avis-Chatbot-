@@ -1,0 +1,63 @@
+[
+  {
+    "category_id": "sub_compact_sedan",
+    "classification": "SUB COMPACT SEDAN",
+    "aliases": ["sub compact", "small sedan", "i10", "هيونداي i10", "صغيرة"],
+    "representative_models": ["Hyundai i10 STD AT"],
+    "customer_friendly_name_ar": "سيدان صغيرة",
+    "customer_friendly_name_en": "Small sedan",
+    "model_guarantee_policy_ar": "السيارات المعروضة أمثلة ضمن الفئة، والتوفر النهائي يعتمد على الفرع والتاريخ.",
+    "model_guarantee_policy_en": "Displayed cars are representative models within the category; final availability depends on branch and date."
+  },
+  {
+    "category_id": "economy_plus_sedan",
+    "classification": "ECONOMY PLUS SEDAN",
+    "aliases": ["economy", "اقتصادية", "يارس", "yaris", "accent", "اكسنت"],
+    "representative_models": ["Accent AT", "Yaris AT"],
+    "customer_friendly_name_ar": "اقتصادية بلس",
+    "customer_friendly_name_en": "Economy Plus Sedan",
+    "model_guarantee_policy_ar": "يارس وأكسنت أمثلة ضمن الفئة، ولا يتم ضمان موديل بعينه بدون تأكيد توفر مباشر.",
+    "model_guarantee_policy_en": "Yaris and Accent are representative models; exact model guarantee requires live availability confirmation."
+  },
+  {
+    "category_id": "compact_plus_sedan",
+    "classification": "COMPACT PLUS SEDAN",
+    "aliases": ["compact", "كورولا", "corolla", "elantra", "النترا", "سيدان مدمجة"],
+    "representative_models": ["Elantra", "Corolla STD AT"],
+    "customer_friendly_name_ar": "سيدان مدمجة بلس",
+    "customer_friendly_name_en": "Compact Plus Sedan",
+    "model_guarantee_policy_ar": "كورولا وإلنترا أمثلة ضمن الفئة، والتوفر النهائي حسب الفرع والتاريخ.",
+    "model_guarantee_policy_en": "Corolla and Elantra are representative models; final availability depends on branch and date."
+  },
+  {
+    "category_id": "mid_size_sedan_sonata",
+    "classification": "MID SIZE SEDAN",
+    "aliases": ["sonata", "سوناتا", "mid size", "سيدان متوسطة"],
+    "representative_models": ["Hyundai Sonata STD AT"],
+    "customer_friendly_name_ar": "سيدان متوسطة",
+    "customer_friendly_name_en": "Mid-size sedan",
+    "model_guarantee_policy_ar": "التوفر النهائي يعتمد على الفرع والتاريخ.",
+    "model_guarantee_policy_en": "Final availability depends on branch and date."
+  },
+  {
+    "category_id": "mid_size_sedan_camry",
+    "classification": "MID SIZE SEDAN",
+    "aliases": ["camry", "كامري", "toyota camry"],
+    "representative_models": ["Toyota Camry LE AT"],
+    "customer_friendly_name_ar": "كامري / سيدان متوسطة",
+    "customer_friendly_name_en": "Toyota Camry / Mid-size sedan",
+    "model_guarantee_policy_ar": "التوفر النهائي يعتمد على الفرع والتاريخ.",
+    "model_guarantee_policy_en": "Final availability depends on branch and date."
+  },
+  {
+    "category_id": "full_size_premium_suv",
+    "classification": "FULL SIZE PREMIUM SUV",
+    "aliases": ["landcruiser", "land cruiser", "لاندكروزر", "landcruiser gxr", "suv فخم"],
+    "representative_models": ["Toyota Landcruiser V6 GXR1"],
+    "customer_friendly_name_ar": "SUV فاخر كبير",
+    "customer_friendly_name_en": "Full-size premium SUV",
+    "model_guarantee_policy_ar": "الفئات الفاخرة قد تتطلب شروط عمر أو بطاقة أعلى، والتوفر النهائي يحتاج تأكيد.",
+    "model_guarantee_policy_en": "Premium categories may require higher age/card conditions, and final availability requires confirmation."
+  }
+]
+

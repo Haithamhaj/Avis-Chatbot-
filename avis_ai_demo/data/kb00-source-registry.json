@@ -1,0 +1,154 @@
+[
+  {
+    "kb_id": "KB01",
+    "kb_name": "Branches & Locations",
+    "source_documents": ["Knowledge Bank.xlsx - الفروع", "Avis Chatbot Knowledge Bank Appendix A"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "low",
+    "direct_answer_allowed": true,
+    "requires_live_data": false,
+    "notes": "Holiday hours and temporary closures are not confirmed by static data."
+  },
+  {
+    "kb_id": "KB02",
+    "kb_name": "Fleet Categories & Vehicle Mapping",
+    "source_documents": ["Avis structured knowledge base spec"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "requires_live_data": true,
+    "notes": "Vehicle models are representative by category and are not branch-level inventory."
+  },
+  {
+    "kb_id": "KB03",
+    "kb_name": "Daily Rental Pricing",
+    "source_documents": ["Knowledge Bank.xlsx - تحديث الأسعار", "Avis Chatbot Knowledge Bank Appendix B"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "requires_live_data": true,
+    "notes": "Can answer table prices, but final availability and final quote require branch/date confirmation."
+  },
+  {
+    "kb_id": "KB04",
+    "kb_name": "Monthly Rental Pricing",
+    "source_documents": ["Knowledge Bank.xlsx - تحديث الأسعار", "Avis Chatbot Knowledge Bank Appendix B"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "requires_live_data": true,
+    "notes": "Monthly pricing must never use daily pricing."
+  },
+  {
+    "kb_id": "KB05",
+    "kb_name": "Intercity Drop-off Fees",
+    "source_documents": ["Avis Chatbot Knowledge Bank Appendix C"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "requires_live_data": false,
+    "notes": "Fees include VAT. Unknown routes must not be guessed."
+  },
+  {
+    "kb_id": "KB06",
+    "kb_name": "Booking Channels & Reservation Flow",
+    "source_documents": ["Avis structured knowledge base spec"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "requires_live_data": true
+  },
+  {
+    "kb_id": "KB07",
+    "kb_name": "Rental Eligibility & Requirements",
+    "source_documents": ["Avis Chatbot Knowledge Bank eligibility rules"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "requires_live_data": false
+  },
+  {
+    "kb_id": "KB08",
+    "kb_name": "Payment, Credit Card & Deposit Policy",
+    "source_documents": ["Avis Chatbot Knowledge Bank Section 13"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "high",
+    "direct_answer_allowed": true,
+    "requires_live_data": false,
+    "notes": "General policy can be answered. Disputes and refunds must escalate."
+  },
+  {
+    "kb_id": "KB09",
+    "kb_name": "Add-ons & Rental Extras",
+    "source_documents": ["Avis structured knowledge base spec"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "requires_live_data": true
+  },
+  {
+    "kb_id": "KB10",
+    "kb_name": "Roadside Assistance & Accident Support",
+    "source_documents": ["Avis structured knowledge base spec"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "high",
+    "direct_answer_allowed": false,
+    "requires_live_data": true
+  },
+  {
+    "kb_id": "KB11",
+    "kb_name": "Chauffeur / Car with Driver Service",
+    "source_documents": ["Avis structured knowledge base spec"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "requires_live_data": true
+  },
+  {
+    "kb_id": "KB12",
+    "kb_name": "Corporate Services & B2B Leads",
+    "source_documents": ["Avis structured knowledge base spec"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": false,
+    "requires_live_data": true
+  },
+  {
+    "kb_id": "KB13",
+    "kb_name": "Complaints, Financial Disputes & Escalation",
+    "source_documents": ["Knowledge Bank complaint templates", "Avis Chatbot Knowledge Bank Sections 4.6 and 4.9"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "high",
+    "direct_answer_allowed": false,
+    "requires_live_data": true,
+    "notes": "Collect details and hand over. Do not decide financial/legal outcomes."
+  },
+  {
+    "kb_id": "KB14",
+    "kb_name": "General FAQ / Safe Informational Answers",
+    "source_documents": ["Avis structured knowledge base spec"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "medium",
+    "direct_answer_allowed": true,
+    "requires_live_data": false
+  },
+  {
+    "kb_id": "KB15",
+    "kb_name": "Intent Examples & Routing Hints",
+    "source_documents": ["Avis structured knowledge base spec"],
+    "update_frequency": "on_policy_change",
+    "risk_level": "low",
+    "direct_answer_allowed": false,
+    "requires_live_data": false
+  },
+  {
+    "kb_id": "KB16",
+    "kb_name": "Semantic Route Metadata",
+    "source_documents": ["Avis controlled conversation routing design"],
+    "update_frequency": "on_workflow_change",
+    "risk_level": "low",
+    "direct_answer_allowed": false,
+    "requires_live_data": false,
+    "notes": "Used only to generate routing candidates. It is not a source of customer-facing facts."
+  }
+]

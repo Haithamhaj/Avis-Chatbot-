@@ -1,0 +1,34 @@
+{
+  "sos_channels": [
+    {
+      "channel_id": "with_you_portal",
+      "name": "Website SOS Portal",
+      "access": "https://with-you.avis.com.sa/",
+      "availability": "24/7",
+      "description_ar": "نموذج إلكتروني للمساعدة على الطريق والحوادث والطوارئ.",
+      "description_en": "Online form for roadside assistance, accidents, and emergency requests."
+    },
+    {
+      "channel_id": "whatsapp_bot",
+      "name": "WhatsApp Bot",
+      "access": "Select Road Assistance / Accident from main menu",
+      "availability": "WhatsApp flow",
+      "description_ar": "يتم تصعيد الطلب لموظف وسيتم التواصل مع العميل.",
+      "description_en": "The request is escalated to a human agent who will contact the customer."
+    },
+    {
+      "channel_id": "mid_call_center",
+      "name": "Emergency Contact / MID",
+      "access": "9200 17517",
+      "availability": "When website is not working",
+      "description_ar": "لأعطال المركبة عند تعذر استخدام الموقع، ويجب ذكر أن السيارة من أفيس وتزويد رقم اللوحة.",
+      "description_en": "For vehicle breakdown issues when the website is not working. Customer should mention Avis car and provide plate number."
+    }
+  ],
+  "issue_types": ["accident", "breakdown", "towing", "flat_tire", "battery", "fuel", "locked_car"],
+  "required_intake_fields": ["safety_status", "mobile", "plate_or_contract_number", "current_location", "issue_type", "vehicle_drivable", "notes"],
+  "safety_first_ar": "سلامتك أولًا. هل يوجد إصابات أو خطر مباشر؟ إذا يوجد خطر أو إصابة، اتصل بالطوارئ أولًا.",
+  "safety_first_en": "Your safety comes first. Are there any injuries or immediate danger? If yes, contact emergency services first.",
+  "do_not_promise": ["arrival time", "liability decision", "repair approval", "final claim outcome"]
+}
+

@@ -1,0 +1,33 @@
+[
+  {
+    "case_type": "financial_dispute",
+    "aliases": ["انخصم", "مبلغ زيادة", "خصم", "double charge", "wrong charge", "refund", "وديعة ما رجعت"],
+    "risk_level": "high",
+    "direct_answer_allowed": false,
+    "required_fields": ["name", "mobile", "booking_or_ra_number", "branch_or_country", "amount", "currency", "transaction_date", "issue_details"],
+    "handover_destination": "Customer Care / Finance Review",
+    "response_ar": "أقدر أجهز لك البلاغ، لكن لا أستطيع تأكيد قرار مالي من المحادثة. أحتاج بعض التفاصيل ثم أحولها للفريق المختص.",
+    "response_en": "I can prepare the case details, but I cannot confirm a financial decision from chat. I'll collect the needed details and hand it over to the right team."
+  },
+  {
+    "case_type": "international_rental_issue",
+    "aliases": ["استأجرت خارج السعودية", "international rental", "foreign station", "outside Saudi", "محطة خارجية"],
+    "risk_level": "high",
+    "direct_answer_allowed": false,
+    "required_fields": ["name", "mobile", "country", "station", "booking_or_ra_number", "amount", "currency", "issue_details"],
+    "handover_destination": "Customer Care / International Case Handling",
+    "response_ar": "الحالات الدولية تحتاج مراجعة من الفريق المختص ولا يمكن تأكيد قرار مالي أو تشغيلي من المحادثة. سأجمع التفاصيل اللازمة للتحويل.",
+    "response_en": "International cases require specialist review and cannot be financially or operationally decided from chat. I'll collect the details for handover."
+  },
+  {
+    "case_type": "accident_or_safety",
+    "aliases": ["حادث", "إصابة", "السيارة ما تتحرك", "accident", "injury", "not drivable"],
+    "risk_level": "high",
+    "direct_answer_allowed": false,
+    "required_fields": ["safety_status", "mobile", "plate_or_contract_number", "location", "vehicle_drivable", "issue_details"],
+    "handover_destination": "Roadside / Emergency Support",
+    "response_ar": "سلامتك أولًا. إذا يوجد إصابة أو خطر مباشر، اتصل بالطوارئ أولًا. بعدها أقدر أجهز تفاصيل الحالة للمساعدة.",
+    "response_en": "Your safety comes first. If there is injury or immediate danger, contact emergency services first. Then I can prepare the case details for assistance."
+  }
+]
+

@@ -1,0 +1,68 @@
+[
+  {
+    "customer_type": "Saudi Citizen",
+    "aliases": ["سعودي", "مواطن", "saudi", "saudi citizen"],
+    "nationality_group": "Saudi",
+    "id_proof_ar": "هوية وطنية",
+    "id_proof_en": "National ID",
+    "license_ar": "رخصة قيادة سعودية",
+    "license_en": "Saudi Driving License",
+    "credit_card_required": true,
+    "min_age": 21,
+    "notes_ar": "قد يزيد العمر المطلوب للفئات الأعلى أو الفاخرة.",
+    "notes_en": "Higher age may apply for premium or luxury classes."
+  },
+  {
+    "customer_type": "Saudi Resident",
+    "aliases": ["مقيم", "اقامة سعودية", "resident", "saudi resident"],
+    "nationality_group": "Expat in Saudi",
+    "id_proof_ar": "إقامة سعودية",
+    "id_proof_en": "Saudi Iqama",
+    "license_ar": "رخصة قيادة سعودية",
+    "license_en": "Saudi Driving License",
+    "credit_card_required": true,
+    "min_age": 21,
+    "notes_ar": "قد يزيد العمر المطلوب للفئات الأعلى أو الفاخرة.",
+    "notes_en": "Higher age may apply for premium or luxury classes."
+  },
+  {
+    "customer_type": "GCC Citizen",
+    "aliases": ["خليجي", "مواطن خليجي", "gcc citizen"],
+    "nationality_group": "GCC Country",
+    "id_proof_ar": "هوية خليجية",
+    "id_proof_en": "GCC National ID",
+    "license_ar": "رخصة قيادة خليجية",
+    "license_en": "GCC Driving License",
+    "credit_card_required": true,
+    "min_age": 21,
+    "notes_ar": "تطبق شروط البطاقة والعمر حسب الفئة.",
+    "notes_en": "Card and age requirements apply by vehicle class."
+  },
+  {
+    "customer_type": "GCC Resident",
+    "aliases": ["مقيم بالخليج", "gcc resident"],
+    "nationality_group": "Non-GCC in GCC",
+    "id_proof_ar": "إقامة خليجية",
+    "id_proof_en": "GCC Iqama",
+    "license_ar": "رخصة قيادة خليجية",
+    "license_en": "GCC Driving License",
+    "credit_card_required": true,
+    "min_age": 21,
+    "notes_ar": "تطبق شروط البطاقة والعمر حسب الفئة.",
+    "notes_en": "Card and age requirements apply by vehicle class."
+  },
+  {
+    "customer_type": "International Visitor",
+    "aliases": ["زائر", "سائح", "visitor", "tourist", "international visitor"],
+    "nationality_group": "Other Countries",
+    "id_proof_ar": "جواز سفر",
+    "id_proof_en": "Passport",
+    "license_ar": "رخصة من بلد العميل أو رخصة دولية حسب الحالة",
+    "license_en": "Home country or international driving license depending on case",
+    "credit_card_required": true,
+    "min_age": 21,
+    "notes_ar": "قد تكون الرخصة الدولية مطلوبة في بعض الحالات.",
+    "notes_en": "An international driving permit may be required in some cases."
+  }
+]
+

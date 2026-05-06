@@ -1,0 +1,63 @@
+[
+  {
+    "monthly_price_id": "monthly_economy_plus_sedan",
+    "category_id": "economy_plus_sedan",
+    "classification": "ECONOMY PLUS SEDAN",
+    "aliases": ["economy", "اقتصادية", "yaris", "يارس", "accent", "اكسنت"],
+    "model": "Accent AT / Yaris AT",
+    "group": "B",
+    "base_monthly_sar": 4050,
+    "cdw_per_month_sar": 300,
+    "online_price_sar": 3726,
+    "with_cdw_sar": 4026,
+    "total_inc_vat_sar": 4631.9,
+    "currency": "SAR",
+    "required_rules": ["monthly_48_hour_advance", "monthly_same_branch"]
+  },
+  {
+    "monthly_price_id": "monthly_compact_plus_sedan",
+    "category_id": "compact_plus_sedan",
+    "classification": "COMPACT PLUS SEDAN",
+    "aliases": ["compact", "كورولا", "corolla", "elantra", "النترا"],
+    "model": "Elantra / Corolla AT",
+    "group": "C+1",
+    "base_monthly_sar": 4837.5,
+    "cdw_per_month_sar": 300,
+    "online_price_sar": 4450.5,
+    "with_cdw_sar": 4750.5,
+    "total_inc_vat_sar": 5465.08,
+    "currency": "SAR",
+    "required_rules": ["monthly_48_hour_advance", "monthly_same_branch"]
+  },
+  {
+    "monthly_price_id": "monthly_camry",
+    "category_id": "mid_size_sedan_camry",
+    "classification": "MID SIZE SEDAN",
+    "aliases": ["camry", "كامري", "toyota camry"],
+    "model": "Toyota Camry LE AT",
+    "group": "G+2",
+    "base_monthly_sar": 6750,
+    "cdw_per_month_sar": 450,
+    "online_price_sar": 6210,
+    "with_cdw_sar": 6660,
+    "total_inc_vat_sar": 7661,
+    "currency": "SAR",
+    "required_rules": ["monthly_48_hour_advance", "monthly_same_branch"]
+  },
+  {
+    "monthly_price_id": "monthly_bmw_7",
+    "category_id": "luxury_full_size",
+    "classification": "LUXURY FULL SIZE",
+    "aliases": ["bmw", "bmw 7", "بي ام", "بي ام دبليو", "luxury"],
+    "model": "BMW 7 Series",
+    "group": "W",
+    "base_monthly_sar": 48375,
+    "cdw_per_month_sar": 700,
+    "online_price_sar": 44505,
+    "with_cdw_sar": 45205,
+    "total_inc_vat_sar": 51987.75,
+    "currency": "SAR",
+    "required_rules": ["monthly_48_hour_advance", "monthly_same_branch", "premium_conditions_may_apply"]
+  }
+]
+
