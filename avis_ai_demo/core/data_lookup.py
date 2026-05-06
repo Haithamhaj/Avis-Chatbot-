@@ -142,6 +142,15 @@ def find_requirement(customer_type_query: str) -> dict[str, Any] | None:
 
 
 def find_card_deposit_policy(query: str) -> dict[str, Any] | None:
+    q = normalize(query)
+    if any(token in q for token in ["ترجع", "تحرير", "release", "متى"]) and any(token in q for token in ["وديعة", "deposit"]):
+        for record in load_kb("kb08-card-deposit-policy.json"):
+            if record.get("policy_id") == "deposit_release_timing":
+                return record
+    if any(token in q for token in ["بطاقة خصم", "debit", "مدى", "mada", "مو ائتمان", "not credit"]):
+        for record in load_kb("kb08-card-deposit-policy.json"):
+            if record.get("policy_id") == "credit_card_requirement":
+                return record
     best_record = None
     best_score = (0, 0)
     for record in load_kb("kb08-card-deposit-policy.json"):

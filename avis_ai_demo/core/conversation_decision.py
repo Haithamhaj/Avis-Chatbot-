@@ -95,8 +95,10 @@ def _from_payload(data: dict[str, Any]) -> ConversationDecision:
 
 
 def _hard_decision(text: str) -> ConversationDecision | None:
-    if any(token in text for token in ["حادث", "إصابة", "اصابة", "السيارة ما تتحرك", "accident", "injury", "not drivable"]):
+    if _looks_like_safety_or_drive_advice(text):
         return ConversationDecision("hard_safety", "roadside", Intent.ROADSIDE_ASSISTANCE, "ready", 1.0, "worried", False, "safety_check")
+    if _looks_like_international_case(text):
+        return ConversationDecision("hard_financial_dispute", "complaint", Intent.COMPLAINT_OR_FINANCIAL_DISPUTE, "ready", 1.0, "frustrated", False, "collect_case_details")
     if any(token in text for token in [
         "انخصم",
         "خصمتوا من",
@@ -113,10 +115,14 @@ def _hard_decision(text: str) -> ConversationDecision | None:
         "refund",
     ]):
         return ConversationDecision("hard_financial_dispute", "complaint", Intent.COMPLAINT_OR_FINANCIAL_DISPUTE, "ready", 1.0, "frustrated", False, "collect_case_details")
+    if _looks_like_service_feedback(text):
+        return ConversationDecision("service_feedback", "service_feedback", Intent.SERVICE_EXPERIENCE_FEEDBACK, "ready", 0.92, "upset", False, "collect_feedback_details")
     return None
 
 
 def _deterministic_hint_decision(text: str) -> ConversationDecision | None:
+    if _is_card_policy_query(text):
+        return ConversationDecision("faq_or_info", "deposit_policy", Intent.CARD_DEPOSIT_POLICY, "not_applicable", 0.94, "curious", False, "answer_from_kb")
     if _is_discount_or_offer_query(text):
         mood = "playful_positive" if any(token in text for token in ["بحب", "أحب", "احب", "هههه"]) else "curious"
         return ConversationDecision("social_with_service_hint", "offers", Intent.GENERAL_FAQ, "not_applicable", 0.9, mood, False, "acknowledge_then_answer")
@@ -132,9 +138,55 @@ def _deterministic_hint_decision(text: str) -> ConversationDecision | None:
 
 
 def _is_discount_or_offer_query(text: str) -> bool:
-    if any(token in text for token in ["انخصم", "بطاقة خصم", "خصمتوا من", "خصمتو من"]):
+    if any(token in text for token in ["انخصم", "بطاقة خصم", "خصمتوا من", "خصمتو من"]) or _is_card_policy_query(text):
         return False
     return any(token in text for token in ["خصم", "عروض", "عرض", "برومو", "كود خصم", "discount", "offer", "promo"])
+
+
+def _is_card_policy_query(text: str) -> bool:
+    card_markers = ["بطاقة", "card", "ائتمان", "credit", "debit", "مدى", "mada"]
+    debit_markers = ["بطاقة خصم", "debit card", "مو ائتمان", "not credit", "مدى", "mada"]
+    deposit_markers = ["وديعة", "deposit", "pre-authorization", "تفويض"]
+    return (
+        any(marker in text for marker in debit_markers)
+        or (any(marker in text for marker in card_markers) and any(marker in text for marker in ["تنفع", "ينفع", "أستأجر", "استأجر", "rent", "require"]))
+        or any(marker in text for marker in deposit_markers)
+    )
+
+
+def _looks_like_service_feedback(text: str) -> bool:
+    service_context = ["فرع", "الموظف", "موظف", "زحمة", "تأخر", "تاخر", "زيارة", "رحت", "ريحتها", "دخان", "السيارة كانت", "visited", "branch", "staff", "queue", "delay", "smoke smell", "dirty car"]
+    upset = ["متضايق", "زعلان", "مو عاجب", "تجربة سيئة", "خدمة سيئة", "رفعت ضغطي", "تأخر", "تاخر", "زحمة", "دخان", "قال عادي", "upset", "bad service", "not happy"]
+    financial = ["انخصم", "وديعة ما رجعت", "خصمتوا", "خصمتو", "refund", "wrong charge", "double charge"]
+    return any(marker in text for marker in service_context) and any(marker in text for marker in upset) and not any(marker in text for marker in financial)
+
+
+def _looks_like_safety_or_drive_advice(text: str) -> bool:
+    return any(token in text for token in [
+        "حادث",
+        "إصابة",
+        "اصابة",
+        "السيارة ما تتحرك",
+        "accident",
+        "injury",
+        "not drivable",
+        "ترجف",
+        "تطفي",
+        "تطفى",
+        "أمشي ولا أوقف",
+        "امشي ولا اوقف",
+        "أكمل عليها",
+        "اكمل عليها",
+        "لازم أوقف",
+        "safe to drive",
+        "continue driving",
+    ])
+
+
+def _looks_like_international_case(text: str) -> bool:
+    international = any(token in text for token in ["دبي", "خارج السعودية", "محطة خارجية", "outside saudi", "dubai", "international rental", "foreign station"])
+    issue = any(token in text for token in ["وديعة", "deposit", "refund", "معلقة", "معلق", "العقد", "contract"])
+    return international and issue
 
 
 def _looks_like_ready_daily_booking(text: str) -> bool:

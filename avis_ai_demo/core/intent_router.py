@@ -18,23 +18,25 @@ def route_intent(message: str, gpt_intent: str | None = None) -> Intent:
         return conversation_intent
     if match_escalation(message):
         return Intent.COMPLAINT_OR_FINANCIAL_DISPUTE
-    if any(token in text for token in ["accident", "injury", "not drivable", "حادث", "إصابة", "السيارة ما تتحرك"]):
+    if _is_international_case(text):
+        return Intent.COMPLAINT_OR_FINANCIAL_DISPUTE
+    if any(token in text for token in ["accident", "injury", "not drivable", "حادث", "إصابة", "السيارة ما تتحرك", "ترجف", "تطفي", "تطفى", "أمشي ولا أوقف", "امشي ولا اوقف", "أكمل عليها", "اكمل عليها", "safe to drive", "continue driving"]):
         return Intent.ROADSIDE_ASSISTANCE
     if any(token in text for token in ["broke down", "towing", "battery", "تعطلت", "سطحة", "البطارية"]):
         return Intent.ROADSIDE_ASSISTANCE
-    if _is_discount_or_offer_query(text):
-        return Intent.GENERAL_FAQ
     if gpt_intent and gpt_intent != Intent.FALLBACK_UNKNOWN.value:
         try:
             return Intent(gpt_intent)
         except ValueError:
             pass
+    if any(token in text for token in ["credit card", "debit card", "deposit", "وديعة", "بطاقة خصم", "بطاقة", "مدى", "mada", "مو ائتمان"]):
+        return Intent.CARD_DEPOSIT_POLICY
+    if _is_discount_or_offer_query(text):
+        return Intent.GENERAL_FAQ
     if any(token in text for token in ["شهري", "monthly", "mini lease", "شهر"]):
         return Intent.MONTHLY_RENTAL
     if any(token in text for token in ["branch", "فرع", "airport", "السليمانية"]):
         return Intent.BRANCH_LOOKUP
-    if any(token in text for token in ["credit card", "deposit", "وديعة", "بطاقة"]):
-        return Intent.CARD_DEPOSIT_POLICY
     if any(token in text for token in ["شركات", "corporate", "leasing", "أسطول"]):
         return Intent.GENERAL_FAQ
     if _is_price_query(text):
@@ -51,9 +53,15 @@ def _is_price_query(text: str) -> bool:
 
 
 def _is_discount_or_offer_query(text: str) -> bool:
-    if any(token in text for token in ["انخصم", "wrong charge", "double charge", "refund"]):
+    if any(token in text for token in ["انخصم", "wrong charge", "double charge", "refund", "بطاقة خصم", "debit card", "مو ائتمان", "مدى", "mada"]):
         return False
     return any(token in text for token in ["خصم", "عروض", "عرض", "برومو", "discount", "offer", "promo"])
+
+
+def _is_international_case(text: str) -> bool:
+    international = any(token in text for token in ["دبي", "خارج السعودية", "محطة خارجية", "outside saudi", "dubai", "international rental", "foreign station"])
+    issue = any(token in text for token in ["وديعة", "deposit", "refund", "معلقة", "معلق", "العقد", "contract"])
+    return international and issue
 
 
 def route_conversation_intent(message: str) -> Intent | None:

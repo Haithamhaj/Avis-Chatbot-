@@ -27,8 +27,10 @@ def evaluate_workflow_gate(decision: ConversationDecision) -> WorkflowGateResult
         return WorkflowGateResult(True, Intent.ROADSIDE_OR_ACCIDENT, "hard_safety_override", "safety_check")
     if decision.interaction_type == "hard_financial_dispute":
         return WorkflowGateResult(True, Intent.COMPLAINT_OR_DISPUTE, "hard_financial_override", "collect_case_details")
-    if decision.interaction_type in {"faq_or_info", "social_with_service_hint"} and decision.workflow_candidate == Intent.GENERAL_FAQ:
-        return WorkflowGateResult(True, Intent.GENERAL_FAQ, "service_hint_kb_lookup", "lookup_general_faq")
+    if decision.interaction_type == "service_feedback":
+        return WorkflowGateResult(True, Intent.SERVICE_EXPERIENCE_FEEDBACK, "service_feedback", "collect_feedback_details")
+    if decision.interaction_type in {"faq_or_info", "social_with_service_hint"} and decision.workflow_candidate in {Intent.GENERAL_FAQ, Intent.CARD_DEPOSIT_POLICY}:
+        return WorkflowGateResult(True, decision.workflow_candidate, "service_hint_kb_lookup", "lookup_general_faq")
     if decision.interaction_type == "workflow_ready" and decision.workflow_candidate is not None:
         return WorkflowGateResult(True, decision.workflow_candidate, "workflow_ready", "route_operational")
     if decision.interaction_type == "workflow_candidate" and decision.workflow_readiness == "ready" and decision.workflow_candidate is not None:

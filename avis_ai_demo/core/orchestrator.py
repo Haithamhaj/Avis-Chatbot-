@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import re
 from typing import Any
 
 from avis_ai_demo.core.calculators import calculate_monthly_quote, daily_price_summary
@@ -10,6 +11,7 @@ from avis_ai_demo.core.conversation_manager import classify_conversation, is_con
 from avis_ai_demo.core.conversation_history import compact_history_for_ai, record_conversation_turn
 from avis_ai_demo.core.data_lookup import (
     find_branch,
+    find_card_deposit_policy,
     find_daily_price,
     find_fleet_category,
     find_general_faq,
@@ -54,7 +56,7 @@ def handle_message(
     decision = decide_conversation(message, service=service, state=asdict(state))
     gate = evaluate_workflow_gate(decision)
     conversation = classify_conversation(message, service=service, state=asdict(state))
-    if is_conversation_only(conversation.intent) and not (
+    if is_conversation_only(conversation.intent) and not gate.allow_operational and not (
         is_confirmation(message, state.phase)
         and state.phase == DailyRentalPhase.AWAITING_PAYMENT_CONFIRMATION.value
     ):
@@ -125,16 +127,23 @@ def handle_message(
     if extraction.get("language") in {"ar", "en"} and message.strip().lower() not in {"yes", "no", "ok", "thanks", "نعم", "لا", "تمام"}:
         language = extraction["language"]
     state.language = language
+    _apply_contextual_entities(state, message, extraction)
 
     route_candidates = semantic_route_candidates(message, service) if _should_check_semantic_routes(message, extraction, conversation.intent) else []
     selected_route = route_candidates[0] if route_candidates else None
     semantic_route_used = False
 
-    if is_confirmation(message, state.phase) and state.phase == DailyRentalPhase.AWAITING_PAYMENT_CONFIRMATION.value:
+    if _is_rental_type_ambiguous(message, state):
+        intent = Intent.POTENTIALLY_RELEVANT_UNCLEAR
+    elif _is_quote_inclusion_question(message, state):
+        intent = Intent.FLEET_PRICING
+    elif _is_availability_guarantee_question(message, state):
+        intent = Intent.FLEET_PRICING
+    elif is_confirmation(message, state.phase) and state.phase == DailyRentalPhase.AWAITING_PAYMENT_CONFIRMATION.value:
         intent = Intent.DAILY_RENTAL
-    elif gate.allow_operational and gate.intent in {Intent.GENERAL_FAQ, Intent.COMPLAINT_OR_DISPUTE, Intent.ROADSIDE_OR_ACCIDENT}:
+    elif gate.allow_operational and gate.intent in {Intent.GENERAL_FAQ, Intent.CARD_DEPOSIT_POLICY, Intent.COMPLAINT_OR_DISPUTE, Intent.SERVICE_EXPERIENCE_FEEDBACK, Intent.ROADSIDE_OR_ACCIDENT}:
         intent = gate.intent
-    elif conversation.intent in {Intent.COMPLAINT_OR_DISPUTE, Intent.ROADSIDE_OR_ACCIDENT}:
+    elif conversation.intent in {Intent.COMPLAINT_OR_DISPUTE, Intent.SERVICE_EXPERIENCE_FEEDBACK, Intent.ROADSIDE_OR_ACCIDENT}:
         intent = conversation.intent
     else:
         intent = route_intent(message, extraction.get("intent"))
@@ -174,6 +183,8 @@ def handle_message(
         "semantic_route_selected": selected_route.to_trace() if semantic_route_used else None,
         "conversation_decision": decision.to_trace(),
         "workflow_gate": gate.to_trace(),
+        "final_route": {},
+        "corrections_applied": [],
     }
 
     if intent == Intent.DAILY_RENTAL:
@@ -181,15 +192,35 @@ def handle_message(
     elif intent == Intent.MONTHLY_RENTAL:
         response = _handle_monthly(state, extraction, trace, service)
     elif intent == Intent.BRANCH_LOOKUP:
-        response = _handle_branch(state, extraction, message, trace, service)
+        if _looks_like_mixed_branch_price(message):
+            response = _handle_mixed_branch_price(state, extraction, message, trace, service)
+            trace["intent"] = Intent.FLEET_PRICING.value
+            state.intent = Intent.FLEET_PRICING
+        else:
+            response = _handle_branch(state, extraction, message, trace, service)
     elif intent == Intent.GENERAL_FAQ:
         response = _handle_general_faq(state, message, trace, service, route_candidate=selected_route)
+    elif intent == Intent.CARD_DEPOSIT_POLICY:
+        if _looks_like_mixed_branch_card_quote(message, state):
+            response = _handle_mixed_card_quote(state, extraction, message, trace, service)
+            trace["intent"] = Intent.CARD_DEPOSIT_POLICY.value
+        else:
+            response = _handle_card_deposit_policy(state, message, trace, service)
     elif intent == Intent.FLEET_PRICING:
-        response = _handle_fleet_price(state, extraction, message, trace, service)
+        if _is_quote_inclusion_question(message, state):
+            response = _handle_quote_inclusion(state, message, trace, service)
+        elif _is_availability_guarantee_question(message, state):
+            response = _handle_availability_caveat(state, message, trace, service)
+        elif _looks_like_mixed_branch_price(message):
+            response = _handle_mixed_branch_price(state, extraction, message, trace, service)
+        else:
+            response = _handle_fleet_price(state, extraction, message, trace, service)
     elif intent in {Intent.ROADSIDE_ASSISTANCE, Intent.ROADSIDE_OR_ACCIDENT}:
         response = _handle_roadside(state, extraction, trace, service)
     elif intent in {Intent.COMPLAINT_OR_FINANCIAL_DISPUTE, Intent.COMPLAINT_OR_DISPUTE}:
         response = _handle_escalation(state, message, trace, service)
+    elif intent == Intent.SERVICE_EXPERIENCE_FEEDBACK:
+        response = _handle_service_feedback(state, message, trace, service)
     else:
         semantic_results = []
         if intent == Intent.FALLBACK_UNKNOWN and _looks_like_avis_adjacent(message):
@@ -204,6 +235,8 @@ def handle_message(
                 state.next_action = Intent.SCOPE_REDIRECT.value
             elif intent == Intent.CLARIFICATION_REQUEST:
                 state.next_action = "clarify"
+            elif intent == Intent.POTENTIALLY_RELEVANT_UNCLEAR and _is_rental_type_ambiguous(message, state):
+                state.next_action = "clarify_rental_type"
             elif intent in {Intent.GREETING, Intent.THANKS_ACKNOWLEDGEMENT, Intent.SMALL_TALK}:
                 state.next_action = "conversation_acknowledgement"
             elif intent == Intent.FALLBACK_UNKNOWN:
@@ -217,6 +250,8 @@ def handle_message(
                 next_action=state.next_action,
                 user_message=message,
             )
+            if intent == Intent.POTENTIALLY_RELEVANT_UNCLEAR and _is_rental_type_ambiguous(message, state):
+                context.allowed_facts["ambiguity_type"] = "daily_vs_monthly_or_comparison"
             _with_memory(context, state)
             response = compose_response(context, service=service)
             trace["guard_failures"] = context.guard_failures
@@ -236,6 +271,11 @@ def handle_message(
                 "summary": state.conversation_summary,
                 "turn_count": len(state.conversation_turns),
             },
+            "final_route": trace.get("final_route") or {
+                "intent": state.intent.value,
+                "source": "deterministic_router",
+                "reason": "resolved_after_conversation_decision",
+            },
         }
     )
     record_conversation_turn(state, user_message=message, assistant_response=response, trace=trace)
@@ -247,7 +287,7 @@ def handle_message(
 
 
 def _tone_for_intent(intent: Intent, default: str = "professional_helpful") -> str:
-    if intent in {Intent.COMPLAINT_OR_DISPUTE, Intent.COMPLAINT_OR_FINANCIAL_DISPUTE, Intent.CARD_DEPOSIT_POLICY}:
+    if intent in {Intent.COMPLAINT_OR_DISPUTE, Intent.COMPLAINT_OR_FINANCIAL_DISPUTE, Intent.CARD_DEPOSIT_POLICY, Intent.SERVICE_EXPERIENCE_FEEDBACK}:
         return "serious_supportive"
     if intent in {Intent.ROADSIDE_OR_ACCIDENT, Intent.ROADSIDE_ASSISTANCE}:
         return "safety_first"
@@ -260,7 +300,103 @@ def _tone_for_intent(intent: Intent, default: str = "professional_helpful") -> s
 
 def _with_memory(context: AnswerContext, state: WorkflowState) -> AnswerContext:
     context.allowed_facts["conversation_memory"] = compact_history_for_ai(state)
+    if state.support_case:
+        context.allowed_facts["support_case"] = dict(state.support_case)
     return context
+
+
+def _apply_contextual_entities(state: WorkflowState, message: str, extraction: dict[str, Any]) -> None:
+    entities = extraction.setdefault("entities", {})
+    text = message.lower()
+    if _is_safety_followup(text, state):
+        extraction["intent"] = Intent.ROADSIDE_ASSISTANCE.value
+        state.last_topic = "roadside_safety"
+    if _is_international_support_case(text):
+        extraction["intent"] = Intent.COMPLAINT_OR_FINANCIAL_DISPUTE.value
+        state.last_topic = "international_support"
+    if state.last_topic == "international_support" and any(token in text for token in ["العقد", "رقم العقد", "جواب نهائي", "قرار نهائي", "final answer", "contract"]):
+        extraction["intent"] = Intent.COMPLAINT_OR_FINANCIAL_DISPUTE.value
+    if _is_service_vehicle_feedback(text):
+        extraction["intent"] = Intent.SERVICE_EXPERIENCE_FEEDBACK.value
+    if _is_correction_message(text):
+        entities["is_correction"] = True
+    if entities.get("is_correction"):
+        state.entities.update({key: value for key, value in entities.items() if value not in (None, "") and key != "is_correction"})
+    if state.intent in {Intent.DAILY_RENTAL, Intent.FLEET_PRICING} and _is_topic_shift_policy_question(text):
+        state.suspended_workflow = state.intent.value
+        state.last_topic = "card_deposit_policy"
+        extraction["intent"] = Intent.CARD_DEPOSIT_POLICY.value
+    if state.intent == Intent.CARD_DEPOSIT_POLICY and any(token in text for token in ["ما ينفع", "ماينفع", "طريقة ثانية", "بديل", "another way", "alternative"]):
+        extraction["intent"] = Intent.CARD_DEPOSIT_POLICY.value
+    if state.intent in {Intent.COMPLAINT_OR_FINANCIAL_DISPUTE, Intent.COMPLAINT_OR_DISPUTE} and any(key in entities for key in ["mobile", "booking_or_contract", "plate_or_contract", "transaction_date"]):
+        extraction["intent"] = Intent.COMPLAINT_OR_FINANCIAL_DISPUTE.value
+    if state.intent in {Intent.COMPLAINT_OR_FINANCIAL_DISPUTE, Intent.COMPLAINT_OR_DISPUTE} and any(token in text for token in ["جواب نهائي", "قرار نهائي", "رقم العقد", "العقد"]):
+        extraction["intent"] = Intent.COMPLAINT_OR_FINANCIAL_DISPUTE.value
+    if state.intent == Intent.SERVICE_EXPERIENCE_FEEDBACK and any(token in text for token in ["فرع", "الموظف", "زحمة", "تأخر", "تاخر", "جوال", "زيارة"]):
+        extraction["intent"] = Intent.SERVICE_EXPERIENCE_FEEDBACK.value
+    if state.intent == Intent.FLEET_PRICING and any(key in entities for key in ["pickup_city", "pickup_date", "rental_days"]):
+        previous_vehicle = state.entities.get("vehicle_query")
+        if previous_vehicle and "vehicle_query" not in entities:
+            entities["vehicle_query"] = previous_vehicle
+        extraction["intent"] = Intent.DAILY_RENTAL.value
+    if _is_rental_type_ambiguous(message, state):
+        state.last_topic = "rental_type_ambiguity"
+    if _has_daily_quote_candidate(entities) and not _is_rental_type_ambiguous(message, state):
+        extraction["intent"] = Intent.DAILY_RENTAL.value
+
+
+def _is_topic_shift_policy_question(text: str) -> bool:
+    shift = any(token in text for token in ["قبلها", "طيب سؤال", "بس سؤال", "خلني اسأل", "خلني أسأل", "before that", "quick question"])
+    policy = any(token in text for token in ["وديعة", "deposit", "بطاقة", "card", "ائتمان", "credit"])
+    return policy and (shift or not any(token in text for token in ["احجز", "book it", "أكد", "confirm"]))
+
+
+def _is_correction_message(text: str) -> bool:
+    return any(token in text for token in ["لا قصدي", "اقصد", "أقصد", "صحح", "خلها", "بدل", "غير"])
+
+
+def _is_safety_followup(text: str, state: WorkflowState) -> bool:
+    signal = any(token in text for token in ["ترجف", "تطفي", "تطفى", "أمشي ولا أوقف", "امشي ولا اوقف", "أكمل عليها", "اكمل عليها", "لازم أوقف", "safe to drive", "continue driving"])
+    sticky = state.intent in {Intent.ROADSIDE_ASSISTANCE, Intent.ROADSIDE_OR_ACCIDENT} or state.last_topic == "roadside_safety"
+    return signal or (sticky and any(token in text for token in ["الفرع", "تمشي", "أوقف", "اوقف", "أكمل", "اكمل"]))
+
+
+def _is_international_support_case(text: str) -> bool:
+    international = any(token in text for token in ["دبي", "خارج السعودية", "محطة خارجية", "outside saudi", "dubai", "international rental", "foreign station"])
+    issue = any(token in text for token in ["وديعة", "deposit", "refund", "معلقة", "معلق", "العقد", "contract"])
+    return international and issue
+
+
+def _is_service_vehicle_feedback(text: str) -> bool:
+    vehicle_or_service = any(token in text for token in ["ريحتها دخان", "ريحة دخان", "دخان", "السيارة كانت", "الفرع قال", "قال عادي", "رفعت ضغطي", "خدمتكم", "تجربة"])
+    nonfinancial = not any(token in text for token in ["انخصم", "وديعة ما رجعت", "refund", "wrong charge", "double charge"])
+    return vehicle_or_service and nonfinancial and any(token in text for token in ["دخان", "رفع", "ضغطي", "عادي", "سيئة", "مو فلوس"])
+
+
+def _is_rental_type_ambiguous(message: str, state: WorkflowState | None = None) -> bool:
+    text = message.lower()
+    monthly = any(token in text for token in ["شهر", "شهري", "monthly"])
+    daily = any(token in text for token in ["يوم", "يومين", "daily", "days"])
+    compare = any(token in text for token in ["حسب السعر", "أرخص", "ارخص", "قارن", "compare", "cheaper"])
+    sticky = state is not None and state.last_topic == "rental_type_ambiguity" and monthly and compare
+    return (monthly and daily and compare) or sticky
+
+
+def _is_availability_guarantee_question(message: str, state: WorkflowState) -> bool:
+    text = message.lower()
+    guarantee = any(token in text for token in ["تضمن", "ضمان", "بالضبط", "أكيد موجود", "متوفرة أكيد", "guarantee", "exact", "available for sure"])
+    context = state.intent == Intent.FLEET_PRICING or bool(state.entities.get("vehicle_query"))
+    return guarantee and context
+
+
+def _is_quote_inclusion_question(message: str, state: WorkflowState) -> bool:
+    text = message.lower()
+    asks_inclusion = any(token in text for token in ["يشمل", "شامل", "قبل أدفع", "قبل ادفع", "include", "included", "before i pay"])
+    return asks_inclusion and state.quote is not None
+
+
+def _has_daily_quote_candidate(entities: dict[str, Any]) -> bool:
+    return all(entities.get(field) for field in ["vehicle_query", "pickup_city", "dropoff_city", "rental_days", "pickup_date", "pickup_time"]) and entities.get("has_valid_license") is True
 
 
 def _looks_like_avis_adjacent(message: str) -> bool:
@@ -282,6 +418,46 @@ def _looks_like_avis_adjacent(message: str) -> bool:
         "حجز",
     ]
     return any(marker.lower() in text for marker in markers)
+
+
+def _looks_like_mixed_branch_price(message: str) -> bool:
+    text = message.lower()
+    branch = any(token in text for token in ["فرع", "branch", "المطار", "airport", "هناك", "قريب"])
+    price_or_vehicle = any(token in text for token in ["سعر", "كم", "price", "كامري", "camry", "يارس", "yaris"])
+    return branch and price_or_vehicle
+
+
+def _looks_like_mixed_branch_card_quote(message: str, state: WorkflowState) -> bool:
+    text = message.lower()
+    has_card = any(token in text for token in ["بطاقة", "مدى", "mada", "debit", "credit"])
+    has_return_or_duration = any(token in text for token in ["أرجعها", "ارجعها", "إرجاع", "ارجاع", "بعد يومين", "يومين", "return"])
+    has_vehicle_context = bool(state.entities.get("vehicle_query")) or any(token in text for token in ["كامري", "camry", "يارس", "yaris"])
+    return has_card and has_return_or_duration and has_vehicle_context
+
+
+def _merge_support_case_details(state: WorkflowState, message: str) -> None:
+    text = message.lower()
+    mobile = re.search(r"(05[0-9]{8})", text)
+    if mobile:
+        state.support_case["mobile"] = mobile.group(1)
+    reference = re.search(r"\b(?:av|ra)[a-z0-9-]*\d+\b", text, flags=re.IGNORECASE)
+    if reference:
+        state.support_case["booking_or_contract"] = reference.group(0).upper()
+    if any(token in text for token in ["أمس", "امس", "yesterday"]):
+        state.support_case["transaction_date"] = "yesterday"
+    date = re.search(r"\b(20[0-9]{2}-[0-9]{2}-[0-9]{2})\b", text)
+    if date:
+        state.support_case["transaction_date"] = date.group(1)
+    if any(token in text for token in ["فرع المطار", "المطار", "airport"]):
+        state.support_case["branch_or_city"] = "airport branch"
+    elif "فرع" in text:
+        state.support_case["branch_or_city"] = "branch mentioned"
+    if message.strip():
+        state.support_case["summary"] = message.strip()
+    state.support_case["has_minimum_details"] = all(
+        state.support_case.get(field)
+        for field in ["booking_or_contract", "mobile", "transaction_date"]
+    )
 
 
 def _should_check_semantic_routes(message: str, extraction: dict[str, Any], conversation_intent: Intent) -> bool:
@@ -318,7 +494,11 @@ def _handle_daily(
         state.guard_failures.extend(context.guard_failures)
         return response
 
-    advance_daily_workflow(state, extraction.get("entities", {}))
+    entities = extraction.get("entities", {})
+    if entities.get("is_correction"):
+        trace["corrections_applied"] = [key for key in ("pickup_city", "dropoff_city", "pickup_date", "pickup_time", "rental_days", "vehicle_query") if key in entities]
+    advance_daily_workflow(state, entities)
+    state.last_route_entities = {key: state.entities.get(key) for key in ("pickup_city", "dropoff_city", "pickup_date", "pickup_time", "rental_days", "vehicle_query") if state.entities.get(key)}
     trace["kb_modules_used"].extend(["KB03", "KB05"])
     if state.quote:
         trace["lookup_records"].append(state.quote.values["price_id"])
@@ -336,6 +516,11 @@ def _handle_daily(
     )
     _with_memory(context, state)
     response = compose_response(context, service=service)
+    if trace.get("corrections_applied"):
+        if state.language == "en":
+            response = f"Got it, I updated the route to pickup from {state.entities.get('pickup_city')} and return in {state.entities.get('dropoff_city')}. {response}"
+        else:
+            response = f"تمام، عدلتها: الاستلام من {state.entities.get('pickup_city')} والإرجاع في {state.entities.get('dropoff_city')}. {response}"
     state.guard_failures.extend(context.guard_failures)
     return response
 
@@ -449,6 +634,36 @@ def _handle_general_faq(
     return response
 
 
+def _handle_card_deposit_policy(
+    state: WorkflowState,
+    message: str,
+    trace: dict[str, Any],
+    service: OpenAIService | None = None,
+) -> str:
+    policy = find_card_deposit_policy(message)
+    if policy is None and state.intent == Intent.CARD_DEPOSIT_POLICY:
+        policy = find_card_deposit_policy("بطاقة خصم")
+    state.next_action = "answer_policy"
+    trace["kb_modules_used"].append("KB08")
+    if policy:
+        trace["lookup_records"].append(policy["policy_id"])
+    context = AnswerContext(
+        intent=Intent.CARD_DEPOSIT_POLICY,
+        language=state.language,
+        phase=state.phase,
+        tone_mode=state.tone_mode,
+        customer_mood=state.customer_mood,
+        user_message=message,
+        next_action=state.next_action,
+    )
+    if state.suspended_workflow:
+        context.allowed_facts["suspended_workflow"] = state.suspended_workflow
+    _with_memory(context, state)
+    response = compose_response(context, {"card_policy": policy}, service=service)
+    state.guard_failures.extend(context.guard_failures)
+    return response
+
+
 def _handle_fleet_price(
     state: WorkflowState,
     extraction: dict[str, Any],
@@ -464,6 +679,7 @@ def _handle_fleet_price(
     if daily:
         trace["lookup_records"].append(daily["price_id"])
         state.quote = daily_price_summary(daily)
+        state.entities["vehicle_query"] = query
     context = AnswerContext(
         intent=Intent.FLEET_PRICING,
         language=state.language,
@@ -475,6 +691,133 @@ def _handle_fleet_price(
     )
     _with_memory(context, state)
     response = compose_response(context, records, service=service)
+    state.guard_failures.extend(context.guard_failures)
+    return response
+
+
+def _handle_mixed_branch_price(
+    state: WorkflowState,
+    extraction: dict[str, Any],
+    message: str,
+    trace: dict[str, Any],
+    service: OpenAIService | None = None,
+) -> str:
+    entities = extraction.get("entities", {})
+    branch_query = entities.get("branch_or_city_query") or entities.get("pickup_city") or state.entities.get("pickup_city") or message
+    vehicle_query = entities.get("vehicle_query") or state.entities.get("vehicle_query") or message
+    branches = find_branch(str(branch_query))
+    daily = find_daily_price(str(vehicle_query))
+    trace["kb_modules_used"].extend(["KB01", "KB02", "KB03"])
+    if branches:
+        trace["lookup_records"].append(branches[0]["id"])
+    if daily:
+        trace["lookup_records"].append(daily["price_id"])
+        state.entities["vehicle_query"] = vehicle_query
+    state.next_action = "answer_mixed_branch_price"
+    context = AnswerContext(
+        intent=Intent.FLEET_PRICING,
+        language=state.language,
+        phase=state.phase,
+        tone_mode=state.tone_mode,
+        customer_mood=state.customer_mood,
+        user_message=message,
+        next_action=state.next_action,
+    )
+    sections = []
+    if branches:
+        sections.append({"type": "branch_info", "branch": branches[0]})
+    if daily:
+        sections.append({"type": "price_info", "daily_price": daily})
+    sections.append({"type": "next_step"})
+    context.allowed_facts["response_sections"] = sections
+    _with_memory(context, state)
+    response = compose_response(context, service=service)
+    state.guard_failures.extend(context.guard_failures)
+    return response
+
+
+def _handle_mixed_card_quote(
+    state: WorkflowState,
+    extraction: dict[str, Any],
+    message: str,
+    trace: dict[str, Any],
+    service: OpenAIService | None = None,
+) -> str:
+    policy = find_card_deposit_policy(message) or find_card_deposit_policy("بطاقة خصم")
+    daily = find_daily_price(str(state.entities.get("vehicle_query") or extraction.get("entities", {}).get("vehicle_query") or message))
+    trace["kb_modules_used"].extend(["KB08", "KB03"])
+    if policy:
+        trace["lookup_records"].append(policy["policy_id"])
+    if daily:
+        trace["lookup_records"].append(daily["price_id"])
+    state.next_action = "answer_card_policy_and_quote_next_step"
+    context = AnswerContext(
+        intent=Intent.CARD_DEPOSIT_POLICY,
+        language=state.language,
+        phase=state.phase,
+        tone_mode=state.tone_mode,
+        customer_mood=state.customer_mood,
+        user_message=message,
+        next_action=state.next_action,
+    )
+    sections: list[dict[str, Any]] = []
+    if policy:
+        sections.append({"type": "card_policy", "card_policy": policy})
+    if daily:
+        sections.append({"type": "price_info", "daily_price": daily})
+    sections.append({"type": "next_step"})
+    context.allowed_facts["response_sections"] = sections
+    _with_memory(context, state)
+    response = compose_response(context, service=service)
+    state.guard_failures.extend(context.guard_failures)
+    return response
+
+
+def _handle_availability_caveat(
+    state: WorkflowState,
+    message: str,
+    trace: dict[str, Any],
+    service: OpenAIService | None = None,
+) -> str:
+    trace["kb_modules_used"].extend(["KB02"])
+    state.next_action = "answer_availability_caveat"
+    context = AnswerContext(
+        intent=Intent.FLEET_PRICING,
+        language=state.language,
+        phase=state.phase,
+        tone_mode=state.tone_mode,
+        customer_mood=state.customer_mood,
+        user_message=message,
+        next_action=state.next_action,
+    )
+    context.allowed_facts["availability_caveat_only"] = True
+    _with_memory(context, state)
+    response = compose_response(context, service=service)
+    state.guard_failures.extend(context.guard_failures)
+    return response
+
+
+def _handle_quote_inclusion(
+    state: WorkflowState,
+    message: str,
+    trace: dict[str, Any],
+    service: OpenAIService | None = None,
+) -> str:
+    trace["kb_modules_used"].append("calculator_quote")
+    state.next_action = "answer_quote_inclusion"
+    context = AnswerContext(
+        intent=Intent.FLEET_PRICING,
+        language=state.language,
+        computed_totals=state.quote,
+        phase=state.phase,
+        tone_mode=state.tone_mode,
+        customer_mood=state.customer_mood,
+        user_message=message,
+        next_action=state.next_action,
+    )
+    context.allowed_facts["quote_inclusion_answer"] = True
+    _with_memory(context, state)
+    response = compose_response(context, service=service)
     state.guard_failures.extend(context.guard_failures)
     return response
 
@@ -512,6 +855,8 @@ def _handle_roadside(
         tone_mode=state.tone_mode,
         customer_mood=state.customer_mood,
     )
+    if any(token in str(state.entities.get("drivable_status", "")) for token in ["uncertain"]) or state.last_topic == "roadside_safety":
+        context.allowed_facts["drive_advice"] = True
     _with_memory(context, state)
     response = compose_response(context, service=service)
     state.guard_failures.extend(context.guard_failures)
@@ -525,6 +870,7 @@ def _handle_escalation(
     service: OpenAIService | None = None,
 ) -> str:
     rule = match_escalation(message)
+    _merge_support_case_details(state, message)
     state.risk_level = "high"
     state.next_action = "handover_to_agent"
     trace["kb_modules_used"].append("KB13")
@@ -544,6 +890,35 @@ def _handle_escalation(
         next_action=state.next_action,
         user_message=message,
     )
+    context.allowed_facts["support_case"] = dict(state.support_case)
+    _with_memory(context, state)
+    response = compose_response(context, service=service)
+    state.guard_failures.extend(context.guard_failures)
+    return response
+
+
+def _handle_service_feedback(
+    state: WorkflowState,
+    message: str,
+    trace: dict[str, Any],
+    service: OpenAIService | None = None,
+) -> str:
+    _merge_support_case_details(state, message)
+    state.risk_level = "medium"
+    state.next_action = "collect_feedback_details"
+    trace["kb_modules_used"].append("KB13")
+    trace["escalation_status"] = False
+    context = AnswerContext(
+        intent=Intent.SERVICE_EXPERIENCE_FEEDBACK,
+        language=state.language,
+        risk_level="medium",
+        phase=state.phase,
+        tone_mode="serious_supportive",
+        customer_mood="upset",
+        next_action=state.next_action,
+        user_message=message,
+    )
+    context.allowed_facts["support_case"] = dict(state.support_case)
     _with_memory(context, state)
     response = compose_response(context, service=service)
     state.guard_failures.extend(context.guard_failures)

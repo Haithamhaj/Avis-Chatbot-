@@ -15,6 +15,7 @@ CONVERSATION_INTENTS = [
     "potentially_relevant_unclear",
     "operational_request",
     "complaint_or_dispute",
+    "service_experience_feedback",
     "roadside_or_accident",
     "fallback_unknown",
 ]
@@ -35,6 +36,7 @@ INTERACTION_TYPES = [
     "workflow_ready",
     "hard_safety",
     "hard_financial_dispute",
+    "service_feedback",
     "off_topic",
     "unclear",
 ]
@@ -49,6 +51,7 @@ SERVICE_DOMAINS = [
     "deposit_policy",
     "roadside",
     "complaint",
+    "service_feedback",
     "company_info",
     "fleet",
 ]

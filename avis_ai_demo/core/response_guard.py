@@ -90,7 +90,7 @@ def validate_customer_response(response: str, context: AnswerContext) -> GuardRe
     if has_total_language and has_money:
         if context.computed_totals is None or not context.computed_totals.values.get("totals_produced"):
             failures.append("totals_without_calculator_output")
-    if has_money and context.computed_totals is None and not context.retrieved_records:
+    if has_money and context.computed_totals is None and not context.retrieved_records and not _numeric_strings(context.allowed_facts):
         failures.append("unsupported_price_claim")
     if has_money and not _money_values_are_allowed(response, context):
         failures.append("unsupported_price_claim")
@@ -115,7 +115,7 @@ def validate_customer_response(response: str, context: AnswerContext) -> GuardRe
 
 
 def _money_values_are_allowed(response: str, context: AnswerContext) -> bool:
-    mentioned = {match.group(1) for match in re.finditer(r"\b(\d+(?:\.\d{1,2})?)\s*(?:sar|ريال)", response, flags=re.IGNORECASE)}
+    mentioned = {_normalise_money(match.group(1)) for match in re.finditer(r"\b(\d[\d,]*(?:\.\d{1,2})?)\s*(?:sar|ريال)", response, flags=re.IGNORECASE)}
     if not mentioned:
         return True
     allowed = set()
@@ -136,10 +136,17 @@ def _numeric_strings(value) -> set[str]:
         for item in value:
             values.update(_numeric_strings(item))
     elif isinstance(value, (int, float)):
-        values.add(str(value))
+        values.add(_normalise_money(str(value)))
         if isinstance(value, float) and value.is_integer():
-            values.add(str(int(value)))
+            values.add(_normalise_money(str(int(value))))
     return values
+
+
+def _normalise_money(value: str) -> str:
+    cleaned = str(value).replace(",", "")
+    if "." in cleaned:
+        cleaned = cleaned.rstrip("0").rstrip(".")
+    return cleaned
 
 
 def deterministic_safe_template(context: AnswerContext) -> str:

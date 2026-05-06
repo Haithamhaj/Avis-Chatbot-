@@ -69,6 +69,8 @@ def _deterministic_conversation_classification(text: str) -> ConversationClassif
         return ConversationClassification(Intent.OFF_TOPIC, "conversation_management", "light_deflection", "casual", "scope_redirect")
     if _is_roadside_or_accident(text):
         return ConversationClassification(Intent.ROADSIDE_OR_ACCIDENT, "operational_routing", "safety_first", "worried", "safety_check")
+    if _is_service_experience_feedback(text):
+        return ConversationClassification(Intent.SERVICE_EXPERIENCE_FEEDBACK, "operational_routing", "serious_supportive", "upset", "collect_feedback_details")
     if _has_explicit_complaint_or_dispute_details(text):
         return ConversationClassification(Intent.COMPLAINT_OR_DISPUTE, "operational_routing", "serious_supportive", "frustrated", "collect_case_details")
     if _is_discount_or_offer_query(text):
@@ -109,6 +111,7 @@ def _from_gpt_classification(data: dict, text: str) -> ConversationClassificatio
     if confidence < SEMANTIC_CONFIDENCE_THRESHOLD and intent not in {
         Intent.OPERATIONAL_REQUEST,
         Intent.COMPLAINT_OR_DISPUTE,
+        Intent.SERVICE_EXPERIENCE_FEEDBACK,
         Intent.ROADSIDE_OR_ACCIDENT,
     }:
         return ConversationClassification(
@@ -122,6 +125,7 @@ def _from_gpt_classification(data: dict, text: str) -> ConversationClassificatio
     phase = "operational_routing" if intent in {
         Intent.OPERATIONAL_REQUEST,
         Intent.COMPLAINT_OR_DISPUTE,
+        Intent.SERVICE_EXPERIENCE_FEEDBACK,
         Intent.ROADSIDE_OR_ACCIDENT,
     } else "conversation_management"
     return ConversationClassification(
@@ -238,7 +242,7 @@ def _is_off_topic(text: str) -> bool:
 
 
 def _is_roadside_or_accident(text: str) -> bool:
-    markers = ["حادث", "إصابة", "اصابة", "صار لي حادث", "تعطلت", "سطحة", "البطارية", "battery", "accident", "injury", "broke down", "towing"]
+    markers = ["حادث", "إصابة", "اصابة", "صار لي حادث", "تعطلت", "سطحة", "البطارية", "ترجف", "تطفي", "تطفى", "أمشي ولا أوقف", "امشي ولا اوقف", "أكمل عليها", "اكمل عليها", "لازم أوقف", "battery", "accident", "injury", "broke down", "towing", "safe to drive", "continue driving"]
     return any(marker in text for marker in markers)
 
 
@@ -279,6 +283,49 @@ def _has_explicit_complaint_or_dispute_details(text: str) -> bool:
     return any(marker in text for marker in markers)
 
 
+def _is_service_experience_feedback(text: str) -> bool:
+    concrete_service = [
+        "رحت فرعكم",
+        "رحت الفرع",
+        "فرعكم",
+        "فرع المطار",
+        "الموظف",
+        "الموظفين",
+        "زحمة",
+        "تأخر",
+        "تاخر",
+        "طابور",
+        "خدمة الفرع",
+        "ريحتها دخان",
+        "ريحة دخان",
+        "السيارة كانت ريحتها",
+        "رفعت ضغطي",
+        "visited your branch",
+        "branch was crowded",
+        "staff was late",
+        "smoke smell",
+        "dirty car",
+    ]
+    upset = [
+        "متضايق",
+        "زعلان",
+        "ما عجبني",
+        "مو عاجبني",
+        "تجربة سيئة",
+        "خدمة سيئة",
+        "رفعت ضغطي",
+        "ريحة دخان",
+        "ريحتها دخان",
+        "قال عادي",
+        "طلعت متضايق",
+        "upset",
+        "bad service",
+        "not happy",
+    ]
+    financial = ["انخصم", "وديعة ما رجعت", "خصمتوا", "خصمتو", "refund", "wrong charge", "double charge"]
+    return any(marker in text for marker in concrete_service) and any(marker in text for marker in upset + ["زحمة", "تأخر", "تاخر"]) and not any(marker in text for marker in financial)
+
+
 def _is_negative_sentiment_unclear(text: str) -> bool:
     markers = [
         "ما احب افيس",
@@ -297,6 +344,9 @@ def _is_negative_sentiment_unclear(text: str) -> bool:
         "خدمتكم سيئة",
         "زعلان منكم",
         "متضايق منكم",
+        "لعبتوا علي",
+        "لعبتو علي",
+        "حسيتكم لعبتوا",
         "bad service",
         "i do not like avis",
         "i don't like avis",
@@ -328,7 +378,7 @@ def _is_unclear_negative_followup(text: str) -> bool:
 
 
 def _is_discount_or_offer_query(text: str) -> bool:
-    if any(token in text for token in ["انخصم", "بطاقة خصم", "خصمتوا من", "خصمتو من"]):
+    if any(token in text for token in ["انخصم", "بطاقة خصم", "خصمتوا من", "خصمتو من", "debit card", "مو ائتمان", "مدى", "mada"]):
         return False
     return any(token in text for token in ["خصم", "عروض", "عرض", "برومو", "كود خصم", "discount", "offer", "promo"])
 

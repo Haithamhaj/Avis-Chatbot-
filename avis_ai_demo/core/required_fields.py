@@ -17,8 +17,6 @@ class PhasedRequiredFields:
 REQUIRED_FIELDS_BY_INTENT: dict[str, PhasedRequiredFields] = {
     "daily_rental": PhasedRequiredFields(
         quote_required_fields=(
-            "customer_name",
-            "age",
             "has_valid_license",
             "pickup_city",
             "dropoff_city",
@@ -102,4 +100,3 @@ def missing_fields_for_phase(intent: str, phase_name: Literal["quote", "payment"
     else:
         fields = contract.post_payment_fields
     return [field for field in fields if not entities.get(field)]
-

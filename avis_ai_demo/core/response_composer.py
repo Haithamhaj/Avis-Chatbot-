@@ -32,6 +32,14 @@ def compose_response(
         Intent.FALLBACK_UNKNOWN,
     }:
         base = _compose_conversation_management(context)
+    elif context.allowed_facts.get("quote_inclusion_answer"):
+        base = _compose_quote_inclusion(context)
+    elif context.allowed_facts.get("availability_caveat_only"):
+        base = _compose_availability_caveat(context)
+    elif context.allowed_facts.get("response_sections"):
+        base = _compose_response_sections(context)
+    elif context.intent == Intent.SERVICE_EXPERIENCE_FEEDBACK:
+        base = _compose_service_feedback(context)
     elif context.intent in {Intent.COMPLAINT_OR_FINANCIAL_DISPUTE, Intent.COMPLAINT_OR_DISPUTE} or context.escalation_required:
         base = _compose_escalation(context)
     elif context.intent in {Intent.ROADSIDE_ASSISTANCE, Intent.ROADSIDE_OR_ACCIDENT}:
@@ -42,6 +50,8 @@ def compose_response(
         base = _compose_branch(context, records.get("branch"))
     elif context.intent == Intent.GENERAL_FAQ:
         base = _compose_general_faq(context, records.get("general_faq"))
+    elif context.intent == Intent.CARD_DEPOSIT_POLICY:
+        base = _compose_card_deposit_policy(context, records.get("card_policy"))
     elif context.intent in {Intent.FLEET_PRICING, Intent.DAILY_RENTAL, Intent.MONTHLY_RENTAL}:
         base = _compose_fleet_or_price(context, records)
     else:
@@ -101,6 +111,10 @@ def _compose_conversation_management(context: AnswerContext) -> str:
         return _service_options("ar")
 
     if context.intent in {Intent.CLARIFICATION_REQUEST, Intent.POTENTIALLY_RELEVANT_UNCLEAR}:
+        if context.allowed_facts.get("ambiguity_type") == "daily_vs_monthly_or_comparison":
+            if context.language == "en":
+                return "To avoid mixing prices, do you want a daily quote or a monthly quote? I can compare only after we confirm the rental type and required details."
+            return "عشان ما نخلط الأسعار، تقصد عرض يومي ولا شهري؟ أقدر أقارن لك بعد ما نحدد نوع التأجير والتفاصيل المطلوبة."
         if context.allowed_facts.get("clarification_turn") == "followup":
             if context.language == "en":
                 return "I get you. What made you feel that way? Tell me what happened, and I’ll point you to the right Avis support path."
@@ -224,6 +238,64 @@ def _compose_general_faq(context: AnswerContext, faq: dict[str, Any] | None) -> 
     return f"{opener}\n\n{answer}" if opener else answer
 
 
+def _compose_card_deposit_policy(context: AnswerContext, policy: dict[str, Any] | None) -> str:
+    if not policy:
+        return "Which card or deposit question do you mean?" if context.language == "en" else "تقصد سؤال عن البطاقة أو الوديعة؟"
+    answer = policy["answer_en"] if context.language == "en" else policy["answer_ar"]
+    if context.language == "en":
+        return f"{answer}\n\nIf you were in the middle of a booking, I can continue from where we stopped."
+    return f"{answer}\n\nوإذا كنا في وسط الحجز، أقدر أكمل معك من نفس النقطة."
+
+
+def _compose_service_feedback(context: AnswerContext) -> str:
+    case = context.allowed_facts.get("support_case") or {}
+    has_mobile = bool(case.get("mobile"))
+    has_branch = bool(case.get("branch") or case.get("branch_or_city"))
+    if context.language == "en":
+        if has_mobile and has_branch:
+            return "I understand, and thank you for the details. I’ll pass the branch experience feedback to the right team. If you have a booking or rental agreement number, share it too so they can review faster."
+        return "I understand. To route this branch experience feedback properly, please share the branch or city, approximate visit time, mobile number, and a short description of what happened. Booking or agreement number is optional if you have it."
+    if has_mobile and has_branch:
+        return "أفهم عليك، وشكرًا على التفاصيل. سأوصل ملاحظة تجربة الفرع للفريق المناسب. إذا عندك رقم حجز أو عقد أرسله أيضًا عشان تكون المراجعة أسرع."
+    return "أفهم عليك، وتجربتك تهمنا. عشان أوصل ملاحظة الفرع للفريق الصحيح، أحتاج اسم الفرع أو المدينة، وقت الزيارة تقريبًا، رقم جوالك، ووصف مختصر للي صار. رقم الحجز أو العقد اختياري إذا متوفر."
+
+
+def _compose_response_sections(context: AnswerContext) -> str:
+    sections = context.allowed_facts.get("response_sections") or []
+    if not sections:
+        return _service_options(context.language)
+    lines: list[str] = []
+    for section in sections:
+        if section.get("type") == "branch_info":
+            branch = section.get("branch")
+            if branch:
+                if context.language == "en":
+                    lines.append(f"Branch: {branch['branch_name_en']}\\nHours: {branch['hours']}\\nPhone: {branch.get('phone', 'Not listed')}")
+                else:
+                    lines.append(f"نعم، عندكم {branch['branch_name_ar']}.\\nساعات العمل: {branch['hours']}\\nالهاتف: {branch.get('phone', 'غير متوفر')}")
+        elif section.get("type") == "price_info":
+            price = section.get("daily_price")
+            if price:
+                if context.language == "en":
+                    lines.append(
+                        f"Approximate daily category price: online {price.get('online_total_vat_sar', price.get('online_price_sar'))} SAR, in-branch {price.get('in_branch_total_vat_sar')} SAR. {category_availability_caveat('en')}"
+                    )
+                else:
+                    lines.append(
+                        f"وبالنسبة للسعر التقريبي للفئة: الإلكتروني {price.get('online_total_vat_sar', price.get('online_price_sar'))} ريال، وسعر الفرع {price.get('in_branch_total_vat_sar')} ريال. {category_availability_caveat('ar')}"
+                    )
+        elif section.get("type") == "next_step":
+            if context.language == "en":
+                lines.append("If you want a full quote, share the rental duration, pickup date and time, and return city.")
+            else:
+                lines.append("إذا تبغى عرض سعر كامل، أرسل مدة الإيجار ووقت الاستلام ومدينة الإرجاع.")
+        elif section.get("type") == "card_policy":
+            policy = section.get("card_policy")
+            if policy:
+                lines.append(policy["answer_en"] if context.language == "en" else policy["answer_ar"])
+    return "\n\n".join(lines)
+
+
 def _contextual_general_faq_opener(context: AnswerContext) -> str:
     text = context.user_message.lower()
     if context.language == "en":
@@ -265,7 +337,7 @@ def _compose_fleet_or_price(context: AnswerContext, records: dict[str, Any]) -> 
         if fleet:
             return f"{fleet['customer_friendly_name_en']}. {fleet['model_guarantee_policy_en']}"
         if context.intent == Intent.DAILY_RENTAL and context.missing_fields:
-            return "Sure. Which Riyadh branch do you prefer for pickup, how long do you need the car, and which vehicle category?"
+            return _daily_missing_fields_prompt(context, "en")
         return "Which vehicle category or model do you mean?"
     if price:
         return (
@@ -277,11 +349,59 @@ def _compose_fleet_or_price(context: AnswerContext, records: dict[str, Any]) -> 
     if fleet:
         return f"{fleet['customer_friendly_name_ar']}. {fleet['model_guarantee_policy_ar']}"
     if context.intent == Intent.DAILY_RENTAL and context.missing_fields:
-        return "أكيد. من أي فرع في الرياض تفضل الاستلام؟ وكم مدة الإيجار؟ وأي فئة سيارة تناسبك؟"
+        return _daily_missing_fields_prompt(context, "ar")
     return "أي فئة أو موديل تقصد؟"
 
 
+def _compose_availability_caveat(context: AnswerContext) -> str:
+    if context.language == "en":
+        return "I can’t guarantee an exact model, color, or unit from chat. I can price the matching category and note your preference, while final availability is confirmed by branch and date."
+    return "ما أقدر أضمن موديل أو لون أو سيارة محددة من المحادثة. أقدر أعطيك سعر الفئة المناسبة وأسجل تفضيلك، والتوفر النهائي يتأكد حسب الفرع والتاريخ."
+
+
+def _compose_quote_inclusion(context: AnswerContext) -> str:
+    if context.language == "en":
+        return "The shown quote is based on the calculator values available in this chat. It includes the listed rental price and any listed one-way fee if applicable. Final branch checks and optional extras are confirmed before payment."
+    return "عرض السعر المعروض مبني على الحاسبة المتاحة في المحادثة. يشمل سعر الإيجار المذكور وأي رسوم تسليم بين المدن إذا كانت ظاهرة في العرض. أي إضافات اختيارية أو تحقق نهائي من الفرع يتأكد قبل الدفع."
+
+
+def _daily_missing_fields_prompt(context: AnswerContext, language: str) -> str:
+    missing = set(context.missing_fields)
+    if "has_valid_license" in missing:
+        if language == "en":
+            return "Do you have a valid driving license? Also, which pickup branch do you prefer?"
+        return "هل لديك رخصة قيادة سارية المفعول؟ ومن أي فرع تفضل الاستلام؟ وكم مدة الإيجار؟"
+    questions_ar = {
+        "pickup_city": "مدينة الاستلام",
+        "dropoff_city": "مدينة الإرجاع",
+        "rental_days": "مدة الإيجار",
+        "pickup_date": "تاريخ الاستلام",
+        "pickup_time": "وقت الاستلام",
+        "vehicle_query": "فئة السيارة أو الموديل",
+    }
+    questions_en = {
+        "pickup_city": "pickup city",
+        "dropoff_city": "return city",
+        "rental_days": "rental duration",
+        "pickup_date": "pickup date",
+        "pickup_time": "pickup time",
+        "vehicle_query": "vehicle category or model",
+    }
+    labels = [questions_en[field] for field in context.missing_fields if field in questions_en] if language == "en" else [questions_ar[field] for field in context.missing_fields if field in questions_ar]
+    if not labels:
+        return "Please share the missing booking details." if language == "en" else "أرسل لي تفاصيل الحجز الناقصة."
+    joined = ", ".join(labels) if language == "en" else "، ".join(labels)
+    if language == "en":
+        return f"Sure. To prepare the quote, please share: {joined}."
+    return f"أكيد. عشان أجهز عرض السعر، أحتاج: {joined}."
+
+
 def _compose_escalation(context: AnswerContext) -> str:
+    case = context.allowed_facts.get("support_case") or {}
+    if case.get("has_minimum_details"):
+        if context.language == "en":
+            return "I received the booking/agreement details, mobile number, and transaction date. I’ll prepare the case for the relevant team. If you have a bank notification image or transaction reference, share it to speed up the review."
+        return "وصلتني تفاصيل الحجز أو العقد ورقم الجوال وتاريخ العملية. سأجهّز الطلب للفريق المختص. إذا عندك صورة الإشعار البنكي أو مرجع العملية أرسلها لتسريع المراجعة."
     if context.language == "en":
         return "I understand. I’ll prepare this correctly and hand it over to the relevant team. Please share the booking or rental agreement number, mobile number, and transaction date."
     return "أفهم عليك. خليني أجهز لك الطلب بالشكل الصحيح وأحوّله إلى الفريق المختص. أحتاج رقم الحجز أو العقد، رقم الجوال، وتاريخ العملية."
@@ -290,4 +410,6 @@ def _compose_escalation(context: AnswerContext) -> str:
 def _compose_roadside(context: AnswerContext) -> str:
     if context.language == "en":
         return "Your safety comes first. Are there any injuries or immediate danger? If there is danger, contact emergency services now. If it is safe, I can help record the assistance request."
+    if context.allowed_facts.get("drive_advice"):
+        return "سلامتك أولًا. إذا السيارة ترجف أو غير مطمئن تمشي فيها، الأفضل توقف في مكان آمن ولا تكمل عليها قبل ما تتواصل مع المساعدة. هل يوجد إصابات أو خطر مباشر؟ وإذا الوضع آمن أرسل رقم الجوال ورقم اللوحة أو العقد وموقعك."
     return "سلامتك أولًا. هل يوجد إصابات أو خطر مباشر؟ إذا فيه خطر، تواصل مع الطوارئ فورًا. إذا الوضع آمن، أقدر أساعدك بتسجيل طلب المساعدة."

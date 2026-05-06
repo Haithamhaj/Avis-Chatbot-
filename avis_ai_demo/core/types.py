@@ -20,6 +20,7 @@ class Intent(str, Enum):
     POTENTIALLY_RELEVANT_UNCLEAR = "potentially_relevant_unclear"
     OPERATIONAL_REQUEST = "operational_request"
     COMPLAINT_OR_DISPUTE = "complaint_or_dispute"
+    SERVICE_EXPERIENCE_FEEDBACK = "service_experience_feedback"
     ROADSIDE_OR_ACCIDENT = "roadside_or_accident"
     SCOPE_REDIRECT = "scope_redirect"
     DAILY_RENTAL = "daily_rental"
@@ -90,6 +91,10 @@ class WorkflowState:
     guard_failures: list[str] = field(default_factory=list)
     conversation_turns: list[dict[str, Any]] = field(default_factory=list)
     conversation_summary: str = ""
+    suspended_workflow: str | None = None
+    last_topic: str | None = None
+    support_case: dict[str, Any] = field(default_factory=dict)
+    last_route_entities: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
