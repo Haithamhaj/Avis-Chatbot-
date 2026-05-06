@@ -12,10 +12,13 @@ def test_streamlit_adapter_has_initial_welcome_message():
     from avis_ai_demo.adapters.streamlit_adapter import WELCOME_MESSAGE
 
     assert "مرحبًا" in WELCOME_MESSAGE
+    assert "معك خالد" in WELCOME_MESSAGE
+    assert "المساعد الذكي من أفيس" in WELCOME_MESSAGE
     assert "حجز سيارة" in WELCOME_MESSAGE
     assert "الأسعار اليومية" in WELCOME_MESSAGE
     assert "الفروع" in WELCOME_MESSAGE
     assert "مساعدة على الطريق" in WELCOME_MESSAGE
+    assert WELCOME_MESSAGE.endswith("كيف أقدر أساعدك؟")
 
 
 def test_streamlit_import_stays_out_of_core():
