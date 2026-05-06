@@ -86,6 +86,8 @@ def _already_has_opening_tone(response: str, phrase: str) -> bool:
     ]
     service_markers = ["أكيد", "تمام", "حاضر", "أقدر", "يسعدني"]
     if phrase == "هلا وارحب":
+        if opening.startswith("وعليكم السلام"):
+            return True
         return any(marker in opening for marker in greeting_markers)
     if phrase == "أبشر":
         return any(marker in opening for marker in service_markers)

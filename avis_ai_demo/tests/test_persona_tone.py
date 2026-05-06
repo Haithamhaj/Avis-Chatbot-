@@ -31,6 +31,7 @@ def test_khalid_persona_prompt_exists_with_boundaries():
     assert "Use memory only for conversational continuity" in KHALID_PERSONA_PROMPT
     assert "Do not stack greetings" in KHALID_PERSONA_PROMPT
     assert "Use at most one phrase" in KHALID_PERSONA_PROMPT
+    assert 'respond to "السلام عليكم"' in KHALID_PERSONA_PROMPT
 
 
 def test_operational_request_uses_professional_helpful_tone():

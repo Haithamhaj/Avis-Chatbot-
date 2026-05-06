@@ -78,9 +78,7 @@ def _service_options(language: str) -> str:
 
 def _compose_conversation_management(context: AnswerContext) -> str:
     if context.intent == Intent.GREETING:
-        if context.language == "en":
-            return "Hello, how can I help you?"
-        return "مرحبًا، كيف أقدر أساعدك؟"
+        return _compose_greeting(context)
 
     if context.intent == Intent.SMALL_TALK:
         if context.language == "en":
@@ -121,6 +119,21 @@ def _compose_conversation_management(context: AnswerContext) -> str:
     if context.language == "en":
         return f"I’m not sure what you mean yet. {_service_options('en')}"
     return f"ما فهمت طلبك بشكل كافي. {_service_options('ar')}"
+
+
+def _compose_greeting(context: AnswerContext) -> str:
+    text = context.user_message.strip().lower()
+    if context.language == "en":
+        if text in {"hi", "hey"}:
+            return "Hi, Khalid from Avis here. How can I help?"
+        return "Hello, Khalid from Avis here. How can I help?"
+    if "السلام" in text:
+        return "وعليكم السلام، معك خالد من أفيس. كيف أقدر أساعدك اليوم؟"
+    if text in {"هلا", "يا هلا"}:
+        return "هلا فيك، معك خالد من أفيس. وش أقدر أرتب لك؟"
+    if text in {"اهلا", "أهلا"}:
+        return "أهلًا وسهلًا، معك خالد من أفيس. كيف أقدر أساعدك؟"
+    return "مرحبًا، معك خالد من أفيس. كيف أقدر أساعدك؟"
 
 
 def _compose_quote(context: AnswerContext) -> str:

@@ -44,6 +44,13 @@ def test_greetings_do_not_route_to_fallback():
     assert trace["phase"] == "conversation_management"
     assert trace["tone_mode"] == "friendly_casual"
     assert "مرحبًا" in response
+    assert "معك خالد" in response
+
+    response, _state, trace = handle_message(None, "السلام عليكم", service())
+    assert trace["intent"] == "greeting"
+    assert response.startswith("وعليكم السلام")
+    assert "معك خالد" in response
+    assert "مرحبًا" not in response
 
 
 def test_thanks_acknowledgement():
