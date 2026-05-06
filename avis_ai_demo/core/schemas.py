@@ -27,6 +27,59 @@ TONE_MODES = [
     "light_deflection",
 ]
 
+INTERACTION_TYPES = [
+    "pure_social",
+    "social_with_service_hint",
+    "faq_or_info",
+    "workflow_candidate",
+    "workflow_ready",
+    "hard_safety",
+    "hard_financial_dispute",
+    "off_topic",
+    "unclear",
+]
+
+SERVICE_DOMAINS = [
+    "none",
+    "booking",
+    "pricing",
+    "offers",
+    "branches",
+    "requirements",
+    "deposit_policy",
+    "roadside",
+    "complaint",
+    "company_info",
+    "fleet",
+]
+
+WORKFLOW_READINESS = ["not_applicable", "not_ready", "ready"]
+
+CONVERSATION_DECISION_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": [
+        "interaction_type",
+        "service_domain",
+        "workflow_candidate",
+        "workflow_readiness",
+        "confidence",
+        "customer_mood",
+        "needs_clarification",
+        "suggested_dialogue_act",
+    ],
+    "properties": {
+        "interaction_type": {"type": "string", "enum": INTERACTION_TYPES},
+        "service_domain": {"type": "string", "enum": SERVICE_DOMAINS},
+        "workflow_candidate": {"type": ["string", "null"], "enum": [None, *[intent.value for intent in Intent]]},
+        "workflow_readiness": {"type": "string", "enum": WORKFLOW_READINESS},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "customer_mood": {"type": "string"},
+        "needs_clarification": {"type": "boolean"},
+        "suggested_dialogue_act": {"type": "string"},
+    },
+}
+
 CONVERSATION_CLASSIFICATION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
@@ -116,6 +169,41 @@ def validate_conversation_classification(data: dict[str, Any]) -> None:
         raise SchemaValidationError("next_action must be a non-empty string.")
     if not isinstance(data["confidence"], (int, float)) or not 0 <= data["confidence"] <= 1:
         raise SchemaValidationError("confidence must be between 0 and 1.")
+
+
+def parse_conversation_decision(raw: str | dict[str, Any]) -> dict[str, Any]:
+    data = json.loads(raw) if isinstance(raw, str) else raw
+    validate_conversation_decision(data)
+    return data
+
+
+def validate_conversation_decision(data: dict[str, Any]) -> None:
+    if not isinstance(data, dict):
+        raise SchemaValidationError("Conversation decision must be a JSON object.")
+    required = set(CONVERSATION_DECISION_SCHEMA["required"])
+    missing = required - set(data)
+    if missing:
+        raise SchemaValidationError(f"Missing conversation decision fields: {sorted(missing)}")
+    extra = set(data) - set(CONVERSATION_DECISION_SCHEMA["properties"])
+    if extra:
+        raise SchemaValidationError(f"Unexpected conversation decision fields: {sorted(extra)}")
+    if data["interaction_type"] not in INTERACTION_TYPES:
+        raise SchemaValidationError("Invalid interaction_type.")
+    if data["service_domain"] not in SERVICE_DOMAINS:
+        raise SchemaValidationError("Invalid service_domain.")
+    candidate = data["workflow_candidate"]
+    if candidate is not None and candidate not in {intent.value for intent in Intent}:
+        raise SchemaValidationError("Invalid workflow_candidate.")
+    if data["workflow_readiness"] not in WORKFLOW_READINESS:
+        raise SchemaValidationError("Invalid workflow_readiness.")
+    if not isinstance(data["confidence"], (int, float)) or not 0 <= data["confidence"] <= 1:
+        raise SchemaValidationError("confidence must be between 0 and 1.")
+    if not isinstance(data["customer_mood"], str) or not data["customer_mood"]:
+        raise SchemaValidationError("customer_mood must be a non-empty string.")
+    if not isinstance(data["needs_clarification"], bool):
+        raise SchemaValidationError("needs_clarification must be boolean.")
+    if not isinstance(data["suggested_dialogue_act"], str) or not data["suggested_dialogue_act"]:
+        raise SchemaValidationError("suggested_dialogue_act must be a non-empty string.")
 
 
 def parse_gpt_extraction(raw: str | dict[str, Any]) -> dict[str, Any]:

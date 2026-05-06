@@ -5,6 +5,7 @@ from typing import Any
 
 from avis_ai_demo.core.calculators import calculate_monthly_quote, daily_price_summary
 from avis_ai_demo.core.confirmation import is_confirmation
+from avis_ai_demo.core.conversation_decision import decide_conversation
 from avis_ai_demo.core.conversation_manager import classify_conversation, is_conversation_only
 from avis_ai_demo.core.conversation_history import compact_history_for_ai, record_conversation_turn
 from avis_ai_demo.core.data_lookup import (
@@ -31,6 +32,7 @@ from avis_ai_demo.core.workflow_state import (
     mark_quote_presented,
     transition_roadside_phase,
 )
+from avis_ai_demo.core.workflow_gate import evaluate_workflow_gate
 from avis_ai_demo.services.mock_external_services import (
     create_booking_request,
     create_roadside_case,
@@ -49,6 +51,8 @@ def handle_message(
     previous_intent = state.intent
     language = detect_language(message, previous_language=state.language)
     service = service or OpenAIService()
+    decision = decide_conversation(message, service=service, state=asdict(state))
+    gate = evaluate_workflow_gate(decision)
     conversation = classify_conversation(message, service=service, state=asdict(state))
     if is_conversation_only(conversation.intent) and not (
         is_confirmation(message, state.phase)
@@ -95,6 +99,8 @@ def handle_message(
             "guard_failures": context.guard_failures,
             "gpt_fallback_used": False,
             "gpt_error": None,
+            "conversation_decision": decision.to_trace(),
+            "workflow_gate": gate.to_trace(),
             "conversation_history": {
                 "summary": state.conversation_summary,
                 "turn_count": len(state.conversation_turns),
@@ -126,10 +132,18 @@ def handle_message(
 
     if is_confirmation(message, state.phase) and state.phase == DailyRentalPhase.AWAITING_PAYMENT_CONFIRMATION.value:
         intent = Intent.DAILY_RENTAL
+    elif gate.allow_operational and gate.intent in {Intent.GENERAL_FAQ, Intent.COMPLAINT_OR_DISPUTE, Intent.ROADSIDE_OR_ACCIDENT}:
+        intent = gate.intent
     elif conversation.intent in {Intent.COMPLAINT_OR_DISPUTE, Intent.ROADSIDE_OR_ACCIDENT}:
         intent = conversation.intent
     else:
         intent = route_intent(message, extraction.get("intent"))
+        if (
+            not gate.allow_operational
+            and decision.confidence >= 0.62
+            and intent in {Intent.DAILY_RENTAL, Intent.MONTHLY_RENTAL, Intent.ROADSIDE_ASSISTANCE, Intent.COMPLAINT_OR_FINANCIAL_DISPUTE}
+        ):
+            intent = gate.intent
         semantic_route_used = should_use_semantic_candidate(intent, selected_route)
         if semantic_route_used:
             intent = selected_route.target_intent
@@ -158,6 +172,8 @@ def handle_message(
         "gpt_error": extraction_error,
         "semantic_route_candidates": [candidate.to_trace() for candidate in route_candidates],
         "semantic_route_selected": selected_route.to_trace() if semantic_route_used else None,
+        "conversation_decision": decision.to_trace(),
+        "workflow_gate": gate.to_trace(),
     }
 
     if intent == Intent.DAILY_RENTAL:

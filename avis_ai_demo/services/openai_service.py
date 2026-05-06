@@ -5,6 +5,7 @@ import json
 from typing import Any, Protocol
 
 from avis_ai_demo.core.conversation_history import compact_history_for_ai
+from avis_ai_demo.core.conversation_decision import decision_context
 
 
 class ChatClient(Protocol):
@@ -103,6 +104,43 @@ class OpenAIService:
                         "collect_case_details, safety_check, fallback_with_service_options. "
                         "Do not answer the user. Do not include facts, "
                         "prices, calculations, branch data, policy decisions, or JSON beyond the object."
+                    ),
+                },
+                {"role": "user", "content": json.dumps({"conversation_context": context, "message": message}, ensure_ascii=False)},
+            ],
+        )
+        return response.output_text
+
+    def decide_conversation(
+        self,
+        message: str,
+        state: dict[str, Any] | None = None,
+    ) -> str | dict[str, Any]:
+        if self.client is not None and hasattr(self.client, "decide_conversation"):
+            return self.client.decide_conversation(message, state)
+        if not self.api_key:
+            raise RuntimeError("OPENAI_API_KEY is not configured.")
+
+        from openai import OpenAI
+
+        context = decision_context(state)
+        client = OpenAI(api_key=self.api_key)
+        response = client.responses.create(
+            model=self.model,
+            input=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are the Conversation Decision Layer for Avis Saudi. Return only strict JSON "
+                        "with keys: interaction_type, service_domain, workflow_candidate, workflow_readiness, "
+                        "confidence, customer_mood, needs_clarification, suggested_dialogue_act. "
+                        "Classify the message as conversation first. Use hard_safety only for accidents, "
+                        "injuries, danger, or non-drivable vehicle. Use hard_financial_dispute only for explicit "
+                        "charges, refunds, deposits not returned, payment complaints, or paid-with-no-booking cases. "
+                        "Treat discount/offer requests as faq_or_info or social_with_service_hint, not financial disputes. "
+                        "Treat playful praise with a service hint as social_with_service_hint. Mark workflow_candidate "
+                        "not_ready when the customer may want a workflow but missing intent/details need clarification. "
+                        "Do not answer the user. Do not calculate, invent facts, or decide payment/booking status."
                     ),
                 },
                 {"role": "user", "content": json.dumps({"conversation_context": context, "message": message}, ensure_ascii=False)},

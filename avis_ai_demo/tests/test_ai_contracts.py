@@ -4,6 +4,7 @@ from pathlib import Path
 from avis_ai_demo.core.entity_extractor import extract_with_gpt_or_fallback
 from avis_ai_demo.core.schemas import (
     SchemaValidationError,
+    validate_conversation_decision,
     validate_conversation_classification,
     validate_gpt_extraction,
 )
@@ -95,6 +96,40 @@ def test_conversation_classification_schema_accepts_only_control_fields():
         assert "Unexpected" in str(exc)
     else:
         raise AssertionError("Conversation classifier accepted response text.")
+
+
+def test_conversation_decision_schema_accepts_only_decision_fields():
+    validate_conversation_decision(
+        {
+            "interaction_type": "social_with_service_hint",
+            "service_domain": "offers",
+            "workflow_candidate": "general_faq",
+            "workflow_readiness": "not_applicable",
+            "confidence": 0.88,
+            "customer_mood": "playful_positive",
+            "needs_clarification": False,
+            "suggested_dialogue_act": "acknowledge_then_answer",
+        }
+    )
+
+    try:
+        validate_conversation_decision(
+            {
+                "interaction_type": "workflow_ready",
+                "service_domain": "pricing",
+                "workflow_candidate": "daily_rental",
+                "workflow_readiness": "ready",
+                "confidence": 0.9,
+                "customer_mood": "task_focused",
+                "needs_clarification": False,
+                "suggested_dialogue_act": "route_operational",
+                "answer": "I can book it.",
+            }
+        )
+    except SchemaValidationError as exc:
+        assert "Unexpected" in str(exc)
+    else:
+        raise AssertionError("Conversation decision accepted response text.")
 
 
 def test_openai_key_loaded_from_environment_only(monkeypatch):

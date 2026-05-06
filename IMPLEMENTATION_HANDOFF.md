@@ -23,6 +23,8 @@ The main runtime path is:
 User message
 -> language detection
 -> short conversation history context
+-> conversation decision layer
+-> workflow entry gate
 -> conversation management
 -> safety/high-risk overrides
 -> operational routing
@@ -63,10 +65,14 @@ User message
 20. Added short conversation history: recent turns and compact summary for context only.
 21. Refined complaint handling so unclear negative sentiment asks a clarification question before escalation.
 22. Refined tone lexicon behavior to avoid stacked greetings such as `هلا وارحب، مرحبًا، تشرفنا`.
+23. Added `conversation_decision.py` as a semantic decision layer that classifies interaction type before workflow entry.
+24. Added `workflow_gate.py` so workflows are entered only when ready or when hard safety/financial triggers are explicit.
 
 ## Current files of interest
 - `avis_ai_demo/core/orchestrator.py`: shared runtime coordinator for Streamlit and FastAPI.
 - `avis_ai_demo/core/conversation_manager.py`: hybrid deterministic/GPT conversation classification.
+- `avis_ai_demo/core/conversation_decision.py`: conversation-first decision layer for social, service-hint, FAQ, workflow candidate, ready workflow, hard safety, and hard financial cases.
+- `avis_ai_demo/core/workflow_gate.py`: workflow entry gate that blocks premature workflow routing and asks clarification when needed.
 - `avis_ai_demo/core/conversation_history.py`: bounded short-term conversation memory.
 - `avis_ai_demo/core/conversation_prompt.py`: Khalid persona contract.
 - `avis_ai_demo/core/persona_response_planner.py`: controlled payload for phrasing.
@@ -97,6 +103,15 @@ The bot keeps a bounded short-term memory:
 - `conversation_summary`: compact deterministic summary.
 - The memory is passed to GPT only as conversational context.
 - It is not a source for prices, availability, branch facts, payment status, booking status, or policies.
+
+## Conversation decision and workflow gate
+The bot now evaluates every message as conversation before workflow routing.
+
+- Hard deterministic overrides are reserved for safety and explicit financial dispute cases.
+- GPT may classify interaction type and readiness, but it cannot perform operations or decide facts.
+- Discount/offer requests are treated as informational or social-with-service-hint, not financial disputes.
+- Workflow candidates that are not ready ask a clarification question instead of entering the workflow.
+- Ready workflows and existing structured extraction still proceed to deterministic workflow/calculator logic.
 
 ## How to run
 Install dependencies if needed:
@@ -161,6 +176,7 @@ Coverage areas include:
 - Structured KB contracts.
 - GPT JSON schema validation and fallback.
 - Conversation management and Khalid persona tone.
+- Conversation decision layer and workflow gate.
 - Short conversation history.
 - Semantic route metadata and vector search.
 - Daily/monthly price separation.
